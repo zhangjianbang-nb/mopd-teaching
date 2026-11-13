@@ -93,6 +93,10 @@ a.card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:va
 .card .meta{font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
 .card .clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:#4b5563;font-size:13.5px}
 .card-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.card-art{margin:-20px -20px 14px;border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;background:#f7f3e8}
+.card-art svg{display:block;width:100%;height:auto}
+.story-art{margin:18px 0 0}
+.story-art svg{display:block;width:100%;height:auto}
 .stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px}
 .stat b{display:block;font-family:var(--serif);font-size:26px;line-height:1.1}
 .stat span{font-size:11.5px;color:var(--muted)}
@@ -1034,23 +1038,25 @@ PAGES.story=function(id){
     chIds.forEach(function(cid){ var c=bookById(cid); if(c){ chHTML+='<section class="section">'+
       '<div class="tag-row">'+chip('全书 · '+c.label,'blue')+link('#/book/'+cid,'单独阅读 →','chip blue')+'</div>'+
       bookPageHTML(c)+'</section>'; } });
+    var chBlock=chHTML?'<details class="long-extra"><summary>完整章节：'+chIds.length+' 章专业导读（读完故事再展开）</summary><div class="long-form">'+chHTML+'</div></details>':'';
     return '<a class="backlink" href="#/story">← 返回故事列表</a>'+
       '<div class="detail-head"><div class="tag-row">'+chip('入门故事','amber')+learnButton('story',s.id)+'</div>'+
       '<h1>'+esc(s.title||id)+'</h1></div>'+
-      (chHTML?'<div class="callout"><b>完整章节</b>：这个故事对应的正文已按「专业导读 → 故事 → 工匠笔记」展开在下方；'+
-        '只想看梗概，可跳到「概念映射」与「类比边界」两节。</div>'+chHTML:'')+
-      longSec(s)+
+      (s.art?'<figure class="figure diagram story-art">'+s.art+'<figcaption>'+esc(s.title||id)+' · 场景图：先看画面，再读故事。</figcaption></figure>':'')+
       section('故事背景',s.scene)+
+      longSec(s)+
       '<section class="section"><h2>角色设定</h2><div class="table-wrap"><table><thead><tr><th>故事角色</th><th>对应概念</th><th>职责</th></tr></thead><tbody>'+roles+'</tbody></table></div></section>'+
-      '<section class="section"><h2>剧情推进</h2><div class="tl">'+plot+'</div></section>'+
+      '<section class="section"><h2>幕索引（完整叙事见上）</h2><div class="tl">'+plot+'</div></section>'+
       '<section class="section"><h2>概念映射</h2><div class="table-wrap"><table><thead><tr><th>技术概念</th><th>故事实体</th></tr></thead><tbody>'+mapping+'</tbody></table></div></section>'+
       '<section class="section"><h2>类比边界（哪里不像）</h2><div class="callout warn"><ul class="bullets">'+
         arr(s.boundaries).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div></section>'+
       (arr(s.covers).length?'<section class="section"><h2>覆盖的概念</h2><div class="chips">'+
-        arr(s.covers).map(function(x){return chip(x,'blue');}).join('')+'</div></section>':'');
+        arr(s.covers).map(function(x){return chip(x,'blue');}).join('')+'</div></section>':'')+
+      chBlock;
   }
   var cards=arr(D.stories).map(function(s){
-    return linkHtml('#/story/'+s.id,'<div class="card-top">'+chip('故事','amber')+chip(arr(s.plot).length+' 幕','gray')+'</div>'+
+    return linkHtml('#/story/'+s.id,(s.art?'<div class="card-art">'+s.art+'</div>':'')+
+      '<div class="card-top">'+chip('故事','amber')+chip('完整叙事','gray')+'</div>'+
       '<h3>'+esc(s.title||s.id)+'</h3><p class="clamp">'+esc(s.scene||'')+'</p>','card');
   }).join('');
   return '<div class="detail-head"><h1>入门故事</h1><div class="sub">先建直觉：具体场景、完整事件、瓶颈爆发、类比边界。</div></div>'+
