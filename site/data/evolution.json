@@ -1,0 +1,152 @@
+{
+ "timeline": [
+  {
+   "year": 2015,
+   "title": "软标签蒸馏（KD）",
+   "note": "教师分布 + 温度，奠定「传递分布」的语言",
+   "paper": "hinton-kd"
+  },
+  {
+   "year": 2022,
+   "title": "弱监督代码蒸馏（EKT）",
+   "note": "用显式知识把弱监督信号变成可训练目标",
+   "paper": "ekt-code"
+  },
+  {
+   "year": 2023,
+   "title": "个性化蒸馏（PerSD）",
+   "note": "按学生能力调整教师信号",
+   "paper": "persd"
+  },
+  {
+   "year": 2023,
+   "title": "先规划后生成（CodePLAN）",
+   "note": "把代码生成拆成计划与实现两层搜索",
+   "paper": "codeplan"
+  },
+  {
+   "year": 2024,
+   "title": "MiniLLM 反向 KL",
+   "note": "小容量学生改用 mode-seeking 目标",
+   "paper": "minillm"
+  },
+  {
+   "year": 2024,
+   "title": "GKD 在线策略",
+   "note": "学生自采样 + λ 混合，系统性消除曝光偏差",
+   "paper": "gkd"
+  },
+  {
+   "year": 2024,
+   "title": "DistiLLM",
+   "note": " streamlined 蒸馏目标与训练流程",
+   "paper": "distillm"
+  },
+  {
+   "year": 2026,
+   "title": "MOPD",
+   "note": "四教师 token 级监督，样本效率 5–6×",
+   "paper": "mopd"
+  },
+  {
+   "year": 2026,
+   "title": "Open-MOPD",
+   "note": "能力不平衡诊断 + 按 headroom 重分配",
+   "paper": "open-mopd"
+  },
+  {
+   "year": 2026,
+   "title": "D³-MOPD / CA-MOPD / DN-MOPD",
+   "note": "动态域调度、能力感知、域方差归一化",
+   "paper": "ca-mopd"
+  },
+  {
+   "year": 2026,
+   "title": "P²-MOPD / UP-MOPD / DivOPD",
+   "note": "并行、更新投影、异步陈旧上界",
+   "paper": "p2-mopd"
+  },
+  {
+   "year": 2026,
+   "title": "TrustMOPD / MT-SDPO",
+   "note": "可靠性加权与答案验证的资格层",
+   "paper": "trustmopd"
+  }
+ ],
+ "edges": [
+  {
+   "from": "e25",
+   "to": "e31",
+   "type": "improve",
+   "note": "继承软标签与温度，把 forward KL 换成 reverse KL，解决小模型学不下多峰的问题"
+  },
+  {
+   "from": "e25",
+   "to": "e30",
+   "type": "extend",
+   "note": "继承分布监督，把 off-policy 数据换成学生自采样，解决曝光偏差"
+  },
+  {
+   "from": "e31",
+   "to": "e30",
+   "type": "improve",
+   "note": "继承 reverse KL，加入 λ 混合与 on-policy 采样，稳定梯度"
+  },
+  {
+   "from": "e30",
+   "to": "e48",
+   "type": "extend",
+   "note": "继承 on-policy 框架，把单教师扩成多教师并按域路由"
+  },
+  {
+   "from": "e48",
+   "to": "e51",
+   "type": "improve",
+   "note": "继承多教师框架，加入能力不平衡诊断与预算重分配"
+  },
+  {
+   "from": "e48",
+   "to": "e36",
+   "type": "improve",
+   "note": "继承 token 级监督，用能力差距决定监督强度"
+  },
+  {
+   "from": "e48",
+   "to": "e40",
+   "type": "improve",
+   "note": "继承多教师目标，做域方差归一化防止高方差域垄断"
+  },
+  {
+   "from": "e48",
+   "to": "e49",
+   "type": "improve",
+   "note": "继承多教师框架，重新审视路由的代价与粒度"
+  },
+  {
+   "from": "e48",
+   "to": "e54",
+   "type": "extend",
+   "note": "继承多教师流程，把教师前向拆到多卡并行"
+  },
+  {
+   "from": "e48",
+   "to": "e60",
+   "type": "extend",
+   "note": "继承多教师更新，把参数更新投影到保护子空间"
+  },
+  {
+   "from": "e30",
+   "to": "e39",
+   "type": "extend",
+   "note": "继承 on-policy，允许陈旧 rollout 并给出陈旧度上界"
+  },
+  {
+   "from": "e59",
+   "to": "e50",
+   "type": "parallel",
+   "note": "同属资格层：一个用可靠性加权，一个用答案验证"
+  }
+ ],
+ "external_review": "2026-11-13 ChatGPT 评审：指出 2026 年论文不可排成单一演进链，已改为并行标注；全文归档 research/chatgpt/review-20261113.txt",
+ "long_html": "<h3>这条线怎么长出来的</h3>\n<p>2015 年的 KD 只解决「压缩一个集成」：教师给软分布，学生用 KL 学。2023 年的 MiniLLM 发现小容量学生学不下教师的多峰分布，改用 reverse KL 做 mode-seeking。2024 年的 GKD 发现 off-policy 数据落在学生永远不会到的状态上，改成学生自采样。2026 年的 MOPD 把「一个教师」扩成「四个教师」，问题从「学哪个分布」变成「听谁、听多少、该不该信」。</p>\n<p>五个阶段的分界不是年份，是失败模式：KD 的失败是「学生学不像」，MiniLLM 的失败是「学生学太像导致 mode collapse」，GKD 的失败是「学生学到的状态不对」，MOPD 的失败是「四个教师互相拖累」，2026 下半年的失败是「教师本身不可信」。每一代都在修上一代的失败，而不是换一个更复杂的模型。</p>\n<h3>三条并行路线</h3>\n<p>第一条是目标线（KD→MiniLLM→GKD→token advantage），第二条是路由线（样本级→token 级→能力感知），第三条是治理线（答案验证→可靠性加权→未来轨迹验证）。三条线在 2026 年交汇成 MOPD 的完整配方：目标定形状，路由定来源，治理定可信度。</p>\n<h3>年份口径与并行关系</h3>\n<p>时间线里的年份统一取 arXiv 首次提交年，会议年份另见论文卡（例如 MiniLLM 2023 年预印、2024 年会议）。2026 年的 CA-MOPD、Open-MOPD、DivOPD、MemOPD 不是一条首尾相接的链：它们分别在修路由、预算、异步、状态对齐四个不同问题，图里用并行边标出，不强行排成一代接一代。Hinton KD 与 MiniLLM 之间还有 sequence-level KD、policy distillation、ensemble distillation 三条对照线，本站把它们压缩进理论卡 T37/T51 与第 11 章的参数合并对照，不假装主线只有一条。</p>"
+}

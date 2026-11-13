@@ -1,0 +1,1323 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>多教师在线策略蒸馏（MOPD） · 领域研究与教学站</title>
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<style>
+:root{
+  --ink:#0f1720; --ink2:#1b2733; --paper:#fbfaf7; --card:#ffffff;
+  --line:#e6e2d8; --line2:#d8d3c6; --muted:#68727d; --muted2:#8b949e;
+  --accent:#1f4e79; --accent-soft:#e9eff5; --accent-deep:#163a5a;
+  --amber:#b45309; --amber-soft:#fdf3e3; --ok:#15803d; --ok-soft:#e8f5ec;
+  --bad:#b91c1c; --bad-soft:#fdecec;
+  --radius:12px; --shadow:0 1px 2px rgba(15,23,32,.05),0 10px 28px rgba(15,23,32,.07);
+  --serif:"Noto Serif SC",Georgia,"Songti SC","SimSun",serif;
+  --sans:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  --mono:"JetBrains Mono","SFMono-Regular",Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;color:var(--ink);line-height:1.35;margin:0}
+h1{font-size:30px}
+h2{font-size:21px;margin-bottom:12px}
+h3{font-size:17px}
+p{margin:0 0 12px}
+ul,ol{margin:0 0 12px;padding-left:22px}
+li{margin:3px 0}
+code{font-family:var(--mono);font-size:.88em;background:#f1efe8;padding:1px 5px;border-radius:4px}
+pre{font-family:var(--mono);font-size:13px;line-height:1.6;background:#111a22;color:#e6edf3;padding:14px 16px;border-radius:10px;overflow:auto;white-space:pre;margin:0 0 12px}
+.app{display:flex;min-height:100vh}
+
+/* ---------- sidebar ---------- */
+#sidebar{width:262px;flex:0 0 262px;background:linear-gradient(180deg,#101a24 0%,#0c141b 100%);color:#c3ced8;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:22px 16px 16px;z-index:40}
+.brand{padding:0 8px 18px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:16px}
+.brand .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#2f6fa5,#b45309);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;color:#fff;font-size:18px;margin-bottom:10px}
+.brand h1{font-size:16px;color:#f4f7fa;letter-spacing:.3px}
+.brand small{display:block;color:#8b9aa8;font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
+.progress-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 12px;margin:0 4px 14px}
+.progress-box .lbl{display:flex;justify-content:space-between;font-size:11px;color:#93a3b1;margin-bottom:6px}
+.progress-box .bar{height:6px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden}
+.progress-box .bar i{display:block;height:100%;background:linear-gradient(90deg,#3f86c4,#d08a3e);border-radius:99px;transition:width .35s}
+nav{flex:1;overflow:auto;padding:0 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:#b7c4cf;font-size:13.5px;border-left:2px solid transparent;margin-bottom:2px}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff;text-decoration:none}
+.nav-item.active{background:rgba(255,255,255,.09);color:#fff;border-left-color:#d08a3e}
+.nav-item .num{font-family:var(--mono);font-size:10.5px;color:#7c8b99;width:18px;text-align:right}
+.nav-item.active .num{color:#d08a3e}
+.side-foot{padding:12px 8px 0;border-top:1px solid rgba(255,255,255,.08);font-size:10.5px;color:#71808d;line-height:1.6}
+
+/* ---------- main ---------- */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{height:60px;display:flex;align-items:center;gap:14px;padding:0 34px;border-bottom:1px solid var(--line);background:rgba(251,250,247,.9);backdrop-filter:blur(8px);position:sticky;top:0;z-index:30}
+.menu-btn{display:none;background:none;border:1px solid var(--line2);border-radius:8px;padding:6px 10px;font-size:15px;cursor:pointer;color:var(--ink)}
+.crumb{font-size:12px;color:var(--muted);letter-spacing:.04em;white-space:nowrap}
+.topsearch{margin-left:auto;display:flex;align-items:center;gap:8px}
+.topsearch input{width:240px;border:1px solid var(--line2);background:#fff;border-radius:99px;padding:7px 14px;font-size:13px;font-family:var(--sans);color:var(--ink);outline:none}
+.topsearch input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+#view{padding:34px 40px 70px;max-width:1120px;width:100%;margin:0 auto;flex:1}
+.footer{border-top:1px solid var(--line);padding:18px 40px;font-size:11.5px;color:var(--muted2);text-align:center}
+
+/* ---------- hero ---------- */
+.hero{padding:26px 0 30px;border-bottom:1px solid var(--line);margin-bottom:28px}
+.hero-kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--amber);font-weight:700;margin-bottom:12px}
+.hero h1{font-size:38px;letter-spacing:-.5px}
+.hero-en{font-family:var(--mono);font-size:12px;color:var(--muted2);letter-spacing:.08em;margin:6px 0 14px}
+.hero-tag{font-size:17px;color:var(--ink2);max-width:720px;font-family:var(--serif)}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+
+/* ---------- buttons / chips ---------- */
+.btn{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;border:1px solid var(--accent);border-radius:8px;padding:9px 16px;font-size:13.5px;font-family:var(--sans);cursor:pointer;transition:.18s}
+.btn:hover{background:var(--accent-deep);text-decoration:none;color:#fff}
+.btn.ghost{background:#fff;color:var(--accent);border-color:var(--line2)}
+.btn.ghost:hover{background:var(--accent-soft);color:var(--accent-deep)}
+.btn.small{padding:5px 11px;font-size:12.5px}
+.btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:2px 9px;border-radius:99px;background:#f1efe8;color:#4b5563;border:1px solid var(--line);white-space:normal;overflow-wrap:anywhere;max-width:100%;line-height:1.35}
+.chip.blue{background:var(--accent-soft);color:var(--accent-deep);border-color:#d6e2ec}
+.chip.amber{background:var(--amber-soft);color:var(--amber);border-color:#f3ddba}
+.chip.green{background:var(--ok-soft);color:var(--ok);border-color:#cde9d5}
+.chip.red{background:var(--bad-soft);color:var(--bad);border-color:#f3caca}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px}
+
+/* ---------- cards / grids ---------- */
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.grid.stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 20px 18px;transition:.2s;position:relative;display:block;color:inherit}
+a.card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--line2);text-decoration:none}
+.card h3{margin-bottom:6px}
+.card .meta{font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+.card .clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:#4b5563;font-size:13.5px}
+.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.stat b{display:block;font-family:var(--serif);font-size:26px;line-height:1.1}
+.stat span{font-size:11.5px;color:var(--muted)}
+
+/* ---------- sections ---------- */
+.section{margin:0 0 30px}
+.section h2{border-left:3px solid var(--amber);padding-left:11px;margin-left:-14px}
+.prose{white-space:pre-wrap;color:#2b3540;font-size:14.5px}
+.lead{font-size:16px;color:var(--ink2)}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:6px 16px;font-size:14px;margin-bottom:14px}
+.kv dt{color:var(--muted);font-size:12.5px;padding-top:2px}
+.kv dd{margin:0;color:#2b3540}
+.bullets li{margin:5px 0}
+.formula{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:0 0 12px;white-space:pre-wrap;font-size:15px}
+.katex{display:inline-block;max-width:100%;overflow-x:auto;overflow-y:hidden;vertical-align:middle}
+.katex-display{max-width:100%;overflow-x:auto;overflow-y:hidden}
+.callout{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 8px 8px 0;font-size:13.5px;margin:0 0 14px}
+.callout.warn{border-left-color:var(--amber);background:var(--amber-soft)}
+.callout.ok{border-left-color:var(--ok);background:var(--ok-soft)}
+.callout b{font-family:var(--sans)}
+.badge{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--accent);color:#fff}
+.badge.amber{background:var(--amber)}
+.badge.green{background:var(--ok)}
+.badge.gray{background:#6b7280}
+.table-wrap{overflow-x:auto;margin:0 0 16px;border:1px solid var(--line);border-radius:10px;background:#fff}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:#f7f5ef;font-weight:600;font-size:12px;color:#374151;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tbody tr:nth-child(even){background:#fcfbf8}
+
+/* ---------- detail ---------- */
+.detail-head{margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.detail-head h1{font-size:27px;margin-bottom:8px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:10px;font-size:12px;color:#4b5563}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+@media(max-width:820px){.detail-head h1{font-size:20px;line-height:1.3;overflow-wrap:anywhere}}
+.detail-head .sub{color:var(--muted);font-size:13px;margin-bottom:10px}
+.backlink{font-size:12.5px;color:var(--muted);display:inline-block;margin-bottom:14px}
+.backlink:hover{color:var(--accent)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.two-col{grid-template-columns:1fr}}
+
+/* ---------- filters ---------- */
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 18px;padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:10px}
+.filters input[type=search]{flex:1;min-width:180px;border:1px solid var(--line2);border-radius:7px;padding:7px 11px;font-size:13px;font-family:var(--sans);outline:none}
+.filters input[type=search]:focus{border-color:var(--accent)}
+.filters select{border:1px solid var(--line2);border-radius:7px;padding:7px 9px;font-size:12.5px;background:#fff;color:var(--ink);font-family:var(--sans)}
+.filters .count{font-size:12px;color:var(--muted);margin-left:auto}
+
+/* ---------- timeline ---------- */
+.tl{position:relative;padding-left:30px;margin:10px 0 26px}
+.tl:before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--line2)}
+.tl-item{position:relative;margin-bottom:20px}
+.tl-item:before{content:"";position:absolute;left:-26px;top:6px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--accent)}
+.tl-year{font-family:var(--mono);font-size:11.5px;color:var(--amber);font-weight:700;letter-spacing:.06em}
+.tl-item h3{font-size:15.5px;margin:3px 0 4px}
+.tl-item p{font-size:13px;color:#4b5563;margin:0}
+.edge-list{display:grid;gap:8px}
+.edge{display:flex;gap:10px;align-items:baseline;background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13px}
+.edge .rel{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);min-width:66px}
+.edge .rel.improve{color:var(--amber)}
+.edge .rel.replace{color:var(--bad)}
+.edge .rel.extend{color:var(--ok)}
+.edge .rel.parallel{color:#6b7280}
+.edge .note{color:var(--muted);font-size:12px}
+
+/* ---------- assessment ---------- */
+.qcard{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px}
+.qhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.qbody{font-size:14.5px;color:#222d38;white-space:pre-wrap;margin-bottom:12px}
+.qcard textarea{width:100%;min-height:70px;border:1px solid var(--line2);border-radius:8px;padding:9px 11px;font-family:var(--sans);font-size:13.5px;resize:vertical;outline:none;background:#fdfcf9;margin-bottom:10px}
+.qcard textarea:focus{border-color:var(--accent)}
+.answer{border-top:1px dashed var(--line2);margin-top:12px;padding-top:12px}
+.answer[hidden]{display:none}
+.answer h4{font-size:13px;color:var(--accent-deep);margin:12px 0 4px;font-family:var(--sans);letter-spacing:.04em}
+.answer .prose{font-size:13.8px}
+.mastery{display:flex;gap:8px;margin-top:12px;align-items:center}
+.mastery .hint{font-size:11.5px;color:var(--muted);margin-left:auto}
+.weak{background:var(--bad-soft);border:1px solid #f3caca;border-radius:10px;padding:14px 16px;margin-bottom:18px;font-size:13px}
+
+/* ---------- misc ---------- */
+.empty{background:#fff;border:1px dashed var(--line2);border-radius:10px;padding:34px;text-align:center;color:var(--muted);font-size:13.5px}
+.learn-btn{margin-left:auto}
+.learned{background:var(--ok-soft);border-color:#cde9d5;color:var(--ok)}
+.tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.divider{height:1px;background:var(--line);margin:26px 0}
+.muted{color:var(--muted);font-size:12.5px}
+.small{font-size:12.5px}
+.anchor-list{columns:2;column-gap:28px}
+@media(max-width:760px){.anchor-list{columns:1}}
+.note{font-size:12px;color:var(--muted2);margin-top:6px}
+.img-fig{margin:0 0 16px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.img-fig img{display:block;width:100%;height:auto}
+.img-fig figcaption{padding:9px 12px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.figure.diagram{margin:0;padding:14px 16px 10px;background:var(--card);border:1px solid var(--line);border-radius:8px}
+.figure.diagram svg{display:block;width:100%;height:auto}
+.figure.diagram figcaption{margin-top:8px;font-size:12.5px;color:var(--muted);font-family:var(--sans)}
+@media(max-width:760px){
+  html,body{overflow-x:hidden}
+  .figure.diagram{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .figure.diagram svg{width:900px;max-width:none}
+}
+
+/* ---------- responsive ---------- */
+@media(max-width:900px){
+  #sidebar{position:fixed;left:-280px;top:0;height:100vh;transition:left .25s;box-shadow:0 0 40px rgba(0,0,0,.3)}
+  body.nav-open #sidebar{left:0}
+  body.nav-open:after{content:"";position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:35}
+  .menu-btn{display:block}
+  #view{padding:24px 18px 60px}
+  .topbar{padding:0 16px}
+  .topsearch input{width:140px}
+  .hero h1{font-size:29px}
+  .kv{grid-template-columns:92px 1fr}
+}
+@media print{
+  #sidebar,.topbar,.hero-actions,.filters,.learn-btn,.mastery,.footer{display:none!important}
+  #view{max-width:none;padding:0}
+  body{background:#fff}
+}
+
+/* ---------- 全书（长文阅读） ---------- */
+.bookpage{max-width:720px;margin:0 auto;font-family:var(--serif);font-size:17px;line-height:2.02;color:var(--ink)}
+.long-form h2{font-size:26px;line-height:1.3;margin:0 0 14px}
+.long-form h3{font-size:18px;margin:26px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.long-form h4{font-size:14.5px;margin:18px 0 6px;color:var(--accent)}
+.long-form p{margin:0 0 12px;font-size:15px;line-height:1.95;color:var(--ink2)}
+.long-form ul,.long-form ol{margin:0 0 12px;padding-left:1.4em;font-size:14.5px;line-height:1.9}
+.long-form li{margin-bottom:.3em}
+.long-form table.mini{width:100%;border-collapse:collapse;font-size:12.8px;margin:10px 0 14px}
+.long-form table.mini th,.long-form table.mini td{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+.long-form table.mini th{background:#f4f1e8;font-size:11px;letter-spacing:.08em;color:var(--muted)}
+.long-form .formula{font-family:var(--mono);font-size:13px;line-height:1.8;background:#f7f4ec;border:1px solid var(--line);border-radius:4px;padding:10px 12px;margin:0 0 14px;overflow-x:auto;white-space:pre-wrap}
+.long-form blockquote{margin:14px 0;padding:8px 14px;border-left:2px solid var(--accent);background:var(--card);font-size:14.5px;line-height:1.9}
+.long-form .num{font-family:var(--mono);white-space:nowrap}
+.long-extra{margin-top:18px;border-top:1px solid var(--line);padding-top:10px}
+.long-extra>summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--accent);padding:6px 0}
+.long-extra[open]>summary{margin-bottom:10px}
+.case{margin:16px 0;border:1px solid var(--line);border-radius:6px;padding:0 14px;background:var(--card)}
+.case>summary{cursor:pointer;font-weight:600;font-size:15px;padding:11px 0;color:var(--ink)}
+.case[open]{padding-bottom:12px}
+.case[open]>summary{border-bottom:1px solid var(--line);margin-bottom:10px}
+.term{margin:6px 0;border-bottom:1px solid var(--line);padding:0 2px}
+.term>summary{cursor:pointer;font-weight:600;padding:8px 0;color:var(--ink)}
+.term[open]{padding-bottom:8px}
+.bookpage p{margin:0 0 15px;text-align:justify;text-justify:inter-ideograph}
+.bookpage .lead{font-size:19px;line-height:1.9;color:var(--ink)}
+.bookpage h2{font-size:30px;line-height:1.25;margin:0 0 18px;letter-spacing:.01em}
+.bookpage h2 .en{display:block;font-family:var(--sans);font-size:11.5px;letter-spacing:.24em;color:var(--muted2);margin-top:8px;font-weight:400}
+.bookpage h3{font-size:19.5px;margin:34px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.bookpage h4{font-size:14.5px;margin:0 0 8px;color:var(--accent)}
+.bookpage .chapter-head{margin:0 0 26px;padding-top:6px;border-top:1px solid var(--line)}
+.bookpage .chapter-no{display:block;font-family:var(--serif);font-style:italic;font-size:52px;line-height:1;color:var(--amber);opacity:.5;margin:14px 0 6px}
+.bookpage .special-intro{margin:26px 0 34px;padding:20px 22px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:4px;font-family:var(--sans);font-size:14.5px;line-height:1.95}
+.bookpage .si-label{font-size:10.5px;letter-spacing:.22em;color:var(--accent);margin-bottom:10px;text-transform:uppercase}
+.bookpage .si-lead{font-size:15.5px;line-height:1.95;color:var(--ink2);margin:0 0 14px;font-weight:500}
+.bookpage .si-block{margin:16px 0 0}
+.bookpage .si-block p{margin:0 0 8px;font-size:14px;line-height:1.95;color:var(--ink2)}
+.bookpage .si-ref{margin:16px 0 0;padding-top:10px;border-top:1px dashed var(--line);font-size:12px;color:var(--muted);letter-spacing:.02em}
+.bookpage aside.note{margin:34px 0;padding:18px 20px;background:var(--amber-soft);border:1px solid #ecd9b8;border-radius:4px;font-family:var(--sans);font-size:13.8px;line-height:1.9}
+.bookpage aside.note .note-title{font-size:11px;letter-spacing:.2em;color:var(--amber);margin-bottom:10px;font-weight:700}
+.bookpage aside.note p{margin:0 0 10px}
+.bookpage .formula{font-family:var(--mono);font-size:13px;line-height:1.8;background:#f7f4ec;border:1px solid var(--line);border-radius:4px;padding:10px 12px;margin:0 0 12px;overflow-x:auto;white-space:pre-wrap}
+.bookpage table.symbols{width:100%;border-collapse:collapse;font-size:12.5px;margin:0 0 12px}
+.bookpage table.symbols th,.bookpage table.symbols td{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+.bookpage table.symbols th{background:#f4f1e8;font-size:11px;letter-spacing:.08em;color:var(--muted)}
+.bookpage table.mini{width:100%;border-collapse:collapse;font-size:12.8px;margin:8px 0 4px}
+.bookpage table.mini th,.bookpage table.mini td{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+.bookpage table.mini th{background:#f4f1e8;font-size:11px;letter-spacing:.08em;color:var(--muted)}
+.bookpage table.mini td.num{font-family:var(--mono);white-space:nowrap}
+.bookpage .story-quote{margin:30px 0;padding:4px 0 4px 20px;border-left:2px solid var(--amber);font-size:17px;line-height:1.9;color:var(--ink2)}
+.bookpage .story-quote .who{display:block;margin-top:8px;font-family:var(--sans);font-size:12px;color:var(--muted);letter-spacing:.06em}
+.bookpage .paper-line{margin:36px 0 0;padding-top:12px;border-top:1px dashed var(--line);font-family:var(--sans);font-size:12.5px;line-height:1.9;color:var(--muted)}
+.bookpage .paper-line strong{color:var(--accent)}
+.bookpage table.numbers{width:100%;border-collapse:collapse;font-size:13px;margin:14px 0 20px}
+.bookpage table.numbers th,.bookpage table.numbers td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.bookpage table.numbers th{background:#f4f1e8;font-size:11.5px;letter-spacing:.06em;color:var(--muted)}
+.bookpage table.numbers td:first-child{font-family:var(--mono);font-size:12px;white-space:nowrap}
+.bookpage dl.glossary{margin:10px 0 0;display:grid;grid-template-columns:132px 1fr;gap:8px 16px;font-size:14px;line-height:1.85}
+.bookpage dl.glossary dt{font-weight:700;color:var(--ink)}
+.bookpage dl.glossary dd{margin:0;color:var(--ink2)}
+.bookpage .cast{margin:24px 0;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:14.5px;line-height:1.85;color:var(--ink2)}
+.bookpage .cast dl{display:grid;grid-template-columns:86px 1fr;gap:6px 14px;margin:0}
+.bookpage .cast dt{font-weight:700;color:var(--ink)}
+.bookpage .cast dd{margin:0}
+.bookpage .figure-row{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0}
+.bookpage .figure-card{flex:1 1 150px;min-width:140px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:4px}
+.bookpage .figure-card b{display:block;font-size:24px;color:var(--accent);line-height:1.2}
+.bookpage .figure-card span{display:block;font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:4px}
+@media (max-width:760px){
+  .bookpage{font-size:16px;line-height:1.95}
+  .bookpage h2{font-size:24px}
+  .bookpage .chapter-no{font-size:40px}
+  .bookpage .special-intro{padding:16px 15px;font-size:13.8px}
+  .bookpage dl.glossary{grid-template-columns:100px 1fr}
+  .bookpage table.numbers,.bookpage table.mini,.bookpage table.symbols{display:block;overflow-x:auto}
+}
+.booknav{display:flex;justify-content:space-between;gap:12px;margin:34px 0 0;padding-top:18px;border-top:1px solid var(--line)}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="logo">AI</div>
+      <h1>多教师在线策略蒸馏（MOPD）</h1>
+      <small>Research &amp; Teaching</small>
+    </div>
+    <div class="progress-box">
+      <div class="lbl"><span>学习进度</span><span id="prog-pct">0%</span></div>
+      <div class="bar"><i id="prog-bar" style="width:0%"></i></div>
+    </div>
+    <nav id="nav-list">
+      <a class="nav-item" data-nav="home" href="#/home"><span class="num">00</span>领域总览</a>
+      <a class="nav-item" data-nav="map" href="#/map"><span class="num">01</span>方向地图</a>
+      <a class="nav-item" data-nav="algos" href="#/algos"><span class="num">02</span>实验与算法库</a>
+      <a class="nav-item" data-nav="papers" href="#/papers"><span class="num">03</span>论文知识库</a>
+      <a class="nav-item" data-nav="evolution" href="#/evolution"><span class="num">04</span>算法演进</a>
+      <a class="nav-item" data-nav="summary" href="#/summary"><span class="num">05</span>领域总结</a>
+      <a class="nav-item" data-nav="book" href="#/book"><span class="num">06</span>全书 · 二十四章</a>
+      <a class="nav-item" data-nav="story" href="#/story"><span class="num">07</span>入门故事</a>
+      <a class="nav-item" data-nav="theory" href="#/theory"><span class="num">08</span>理论深入</a>
+      <a class="nav-item" data-nav="deepdive" href="#/deepdive"><span class="num">09</span>论文精读</a>
+      <a class="nav-item" data-nav="exam" href="#/exam"><span class="num">10</span>考试与练习</a>
+      <a class="nav-item" data-nav="appendix" href="#/appendix"><span class="num">11</span>附录 · 术语与案例</a>
+    </nav>
+    <div class="side-foot">研究 → 教学 → 网站<br>数据真源：site/data/*.json</div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-btn" id="menu-btn" aria-label="打开导航">☰</button>
+      <div class="crumb" id="crumb">领域总览</div>
+      <div class="topsearch">
+        <input id="global-q" type="search" placeholder="搜索论文或算法" aria-label="全局搜索（论文与算法）">
+      </div>
+    </header>
+    <main id="view"></main>
+    <footer class="footer">
+      <span id="foot-note">本页内容来自结构化研究库 · 公式 KaTeX（本地 vendor）· 关系图内置 SVG · 详见 DEPENDENCIES.md</span>
+      <span id="build-stamp" class="muted"></span>
+    </footer>
+  </div>
+</div>
+
+<script src="data/bundle.js"></script>
+<script defer src="vendor/katex/katex.min.js"></script>
+<script defer src="vendor/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+var D = window.SITE_DATA || null;
+var view = document.getElementById('view');
+var navList = document.getElementById('nav-list');
+var crumb = document.getElementById('crumb');
+
+var NAV = [
+  ['home','领域总览','00'],
+  ['map','方向地图','01'],
+  ['algos','实验与算法库','02'],
+  ['papers','论文知识库','03'],
+  ['evolution','算法演进','04'],
+  ['summary','领域总结','05'],
+  ['book','全书 · 二十四章','06'],
+  ['story','入门故事','07'],
+  ['theory','理论深入','08'],
+  ['deepdive','论文精读','09'],
+  ['exam','考试与练习','10'],
+  ['appendix','附录 · 术语与案例','11']
+];
+
+var PKEY = 'ait-progress:' + ((D && D.domain && D.domain.name_en) || 'domain');
+var PSCHEMA = 2;
+function pruneProgress(p){
+  var track={}, qs={};
+  arr(D.theory).forEach(function(x){ track[x.id]=1; });
+  arr(D.papers).forEach(function(x){ track[x.id]=1; });
+  arr(D.stories).forEach(function(x){ track[x.id]=1; });
+  arr(D.assessments).forEach(function(q){ qs[q.id]=1; });
+  var l={}, m={};
+  Object.keys(p.learned||{}).forEach(function(k){ var id=k.replace(/^[a-z]+:/,''); if(track[id]) l[k]=p.learned[k]; });
+  Object.keys(p.mastery||{}).forEach(function(k){ if(qs[k]) m[k]=p.mastery[k]; });
+  return {learned:l, mastery:m};
+}
+var state = { search:'', paperDir:'', paperType:'', paperYear:'', algoDir:'', algoTier:'', examLevel:'', examModule:'' };
+
+function esc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function arr(x){ return Array.isArray(x) ? x : []; }
+function byId(list,id){ var a=arr(list); for(var i=0;i<a.length;i++){ if(a[i].id===id) return a[i]; } return null; }
+function dirName(id){ var d=byId(D.directions,id); return d?d.name:id; }
+function paperTitle(id){ var p=byId(D.papers,id); return p?p.title:id; }
+function algName(id){ var a=byId(D.algorithms,id); return a?a.name:id; }
+function theoryTitle(id){ var t=byId(D.theory,id); return t?t.title:id; }
+function storyTitle(id){ var s=byId(D.stories,id); return s?s.title:id; }
+function link(href,text,cls){ return '<a class="'+(cls||'')+'" href="'+href+'">'+esc(text)+'</a>'; }
+function linkHtml(href,html,cls){ return '<a class="'+(cls||'')+'" href="'+href+'">'+html+'</a>'; }
+function chip(text,cls){ return '<span class="chip '+(cls||'')+'">'+esc(text)+'</span>'; }
+function prose(text){ return '<p class="prose">'+esc(text)+'</p>'; }
+function section(title,body,cls){
+  if(!body) return '';
+  return '<section class="section '+(cls||'')+'"><h2>'+esc(title)+'</h2>'+prose(body)+'</section>';
+}
+function longSec(x){
+  return (x&&x.long_html)?'<section class="section long-form">'+x.long_html+'</section>':'';
+}
+function listSection(title,items,cls){
+  var a=arr(items).filter(Boolean); if(!a.length) return '';
+  return '<section class="section '+(cls||'')+'"><h2>'+esc(title)+'</h2><ul class="bullets">'+
+    a.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></section>';
+}
+function emptyState(msg){
+  return '<div class="empty">'+esc(msg||'该模块数据尚未录入。请先完成 Phase A/B 并填充 site/data/*.json，再运行 bundle_data.py。')+'</div>';
+}
+function typeLabel(t){
+  return ({foundational:'奠基性',classic:'经典',recent:'近年',latest:'最新'})[t] || t || '未分类';
+}
+function typeChip(t){
+  var cls = t==='foundational' ? 'amber' : t==='classic' ? 'blue' : t==='recent' ? 'green' : 'gray';
+  return chip(typeLabel(t),cls);
+}
+
+/* ---------- progress ---------- */
+function loadProgress(){
+  try{
+    var raw=localStorage.getItem(PKEY)||'{}';
+    var o=JSON.parse(raw);
+    var p=pruneProgress({learned:o.learned||{}, mastery:o.mastery||{}});
+    var next=JSON.stringify({v:PSCHEMA, learned:p.learned, mastery:p.mastery});
+    if(raw!==next) localStorage.setItem(PKEY, next);  /* v1 或含脏 id：清理后回写，真正自愈 */
+    return p;
+  }catch(e){ return {learned:{}, mastery:{}, v:PSCHEMA}; }
+}
+function saveProgress(p){ p.v=PSCHEMA; try{ localStorage.setItem(PKEY, JSON.stringify(p)); }catch(e){} }
+function trackables(){
+  var out=[];
+  arr(D && D.theory).forEach(function(x){ out.push(['theory',x.id]); });
+  arr(D && D.papers).forEach(function(x){ out.push(['paper',x.id]); });
+  arr(D && D.stories).forEach(function(x){ out.push(['story',x.id]); });
+  return out;
+}
+function progressInfo(){
+  var p=loadProgress(), all=trackables(), n=0;
+  all.forEach(function(t){ if(p.learned[t[0]+':'+t[1]]) n++; });
+  var pct = all.length ? Math.round(n/all.length*100) : 0;
+  return {pct:pct, done:n, total:all.length, p:p};
+}
+function refreshProgress(){
+  var info=progressInfo();
+  var pct=document.getElementById('prog-pct'), bar=document.getElementById('prog-bar');
+  if(pct) pct.textContent=info.pct+'%';
+  if(bar) bar.style.width=info.pct+'%';
+}
+function isLearned(kind,id){ return !!loadProgress().learned[kind+':'+id]; }
+function learnButton(kind,id){
+  var on=isLearned(kind,id);
+  return '<button class="btn small '+(on?'learned':'ghost')+' learn-btn" data-learn="'+kind+':'+id+'">'+
+    (on?'✓ 已学':'标记已学')+'</button>';
+}
+
+/* ---------- math / graph ---------- */
+function renderMath(){
+  if(!window.renderMathInElement) return;
+  try{
+    window.renderMathInElement(view,{
+      delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false}],
+      throwOnError:false, ignoredTags:['script','noscript','style','textarea','pre','code']
+    });
+  }catch(e){}
+}
+var REL_COLORS={inherit:'#1f4e79',improve:'#b45309',replace:'#b91c1c',extend:'#15803d',parallel:'#6b7280'};
+
+function svgGraph(edges){
+  var nodes={}, order=[];
+  edges.forEach(function(e){
+    [e.from,e.to].forEach(function(id){
+      if(!nodes[id]){ nodes[id]={id:id,out:[],in:[]}; order.push(id); }
+    });
+  });
+  edges.forEach(function(e){ nodes[e.from].out.push(e.to); nodes[e.to].in.push(e.from); });
+  var layer={}, indeg={};
+  order.forEach(function(id){ indeg[id]=nodes[id].in.length; layer[id]=0; });
+  var queue=order.filter(function(id){ return indeg[id]===0; });
+  var seen=0;
+  while(queue.length){
+    var id=queue.shift(); seen++;
+    nodes[id].out.forEach(function(to){
+      layer[to]=Math.max(layer[to],layer[id]+1);
+      indeg[to]--;
+      if(indeg[to]===0) queue.push(to);
+    });
+  }
+  if(seen<order.length){
+    var cols=Math.max(1,Math.ceil(Math.sqrt(order.length)));
+    order.forEach(function(id,i){ layer[id]=i%cols; });
+  }
+  var byLayer={}, maxLayer=0;
+  order.forEach(function(id){
+    var l=layer[id]||0;
+    (byLayer[l]=byLayer[l]||[]).push(id);
+    if(l>maxLayer) maxLayer=l;
+  });
+  var NW=184, NH=52, GX=80, GY=26, PAD=28, maxCount=1;
+  Object.keys(byLayer).forEach(function(l){ maxCount=Math.max(maxCount,byLayer[l].length); });
+  var W=PAD*2+(maxLayer+1)*NW+maxLayer*GX;
+  var H=PAD*2+maxCount*NH+(maxCount-1)*GY;
+  var pos={};
+  Object.keys(byLayer).forEach(function(l){
+    byLayer[l].forEach(function(id,i){ pos[id]={x:PAD+l*(NW+GX), y:PAD+i*(NH+GY)}; });
+  });
+  var parts=['<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" font-family="Noto Sans SC,PingFang SC,sans-serif" role="img" aria-label="算法演进关系图">'];
+  parts.push('<defs>');
+  Object.keys(REL_COLORS).forEach(function(k){
+    parts.push('<marker id="ar-'+k+'" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="'+REL_COLORS[k]+'"/></marker>');
+  });
+  parts.push('</defs>');
+  var crossN=0;
+  edges.forEach(function(e){
+    var a=pos[e.from], b=pos[e.to];
+    if(!a||!b) return;
+    var la=layer[e.from]||0, lb=layer[e.to]||0;
+    var dash=e.type==='parallel'?' stroke-dasharray="5 3"':'';
+    var arrow=e.type==='parallel'?'':' marker-end="url(#ar-'+e.type+')"';
+    var stroke=' fill="none" stroke="'+REL_COLORS[e.type]+'" stroke-width="1.6"'+dash+arrow;
+    if(lb-la>1){   /* 跨多列：走「列间空隙 + 行间空隙」的正交折线，避免穿过中间列节点 */
+      var ox1=a.x+NW, oy1=a.y+NH/2, ox2=b.x, oy2=b.y+NH/2;
+      var lane=((crossN++%3)-1)*10;
+      var xc1=a.x+NW+GX/2+lane, xc2=b.x-GX/2+lane, yg=Math.max(8,b.y-GY/2);
+      parts.push('<path d="M '+ox1+' '+oy1+' H '+xc1+' V '+yg+' H '+xc2+' V '+oy2+' H '+ox2+'"'+stroke+'/>');
+      return;
+    }
+    var x1=a.x+NW, y1=a.y+NH/2, x2=b.x, y2=b.y+NH/2;
+    if(la===lb){ x1=a.x+NW/2; y1=a.y+NH; x2=b.x+NW/2; y2=b.y; }
+    var mx=(x1+x2)/2;
+    parts.push('<path d="M '+x1+' '+y1+' C '+mx+' '+y1+', '+mx+' '+y2+', '+x2+' '+y2+'"'+stroke+'/>');
+  });
+  order.forEach(function(id){
+    var p=pos[id], full=algName(id)||id;
+    var lines=wrapName(full);
+    parts.push('<g><title>'+esc(full)+'</title><rect x="'+p.x+'" y="'+p.y+'" width="'+NW+'" height="'+NH+'" rx="9" fill="#ffffff" stroke="#d8d3c6"/>');
+    var cx=p.x+NW/2;
+    if(lines.length===1){
+      parts.push('<text x="'+cx+'" y="'+(p.y+NH/2+4.5)+'" font-size="12.5" fill="#0f1720" text-anchor="middle">'+esc(lines[0])+'</text>');
+    }else if(lines.length===2){
+      parts.push('<text x="'+cx+'" y="'+(p.y+NH/2-3)+'" font-size="12" fill="#0f1720" text-anchor="middle">'+esc(lines[0])+'</text>');
+      parts.push('<text x="'+cx+'" y="'+(p.y+NH/2+13)+'" font-size="12" fill="#0f1720" text-anchor="middle">'+esc(lines[1])+'</text>');
+    }else{
+      parts.push('<text x="'+cx+'" y="'+(p.y+NH/2-9)+'" font-size="11" fill="#0f1720" text-anchor="middle">'+esc(lines[0])+'</text>');
+      parts.push('<text x="'+cx+'" y="'+(p.y+NH/2+2)+'" font-size="11" fill="#0f1720" text-anchor="middle">'+esc(lines[1])+'</text>');
+      parts.push('<text x="'+cx+'" y="'+(p.y+NH/2+13)+'" font-size="11" fill="#0f1720" text-anchor="middle">'+esc(lines[2])+'</text>');
+    }
+    parts.push('</g>');
+  });
+  parts.push('</svg>');
+  return parts.join('');
+}
+function wrapName(full){
+  var m=full.match(/^(.{1,14})（(.+)）$/);
+  if(m){
+    var a=m[1], b=m[2];
+    if(b.length<=13) return [a,'（'+b+'）'];
+    var head=b.slice(0,14), sp=head.lastIndexOf(' ');
+    var cut=(sp>=4)?sp:13;
+    var b1=b.slice(0,cut), b2=b.slice(cut).replace(/^ /,'');
+    if(b2.length>14) b2=b2.slice(0,13)+'…';
+    return [a,'（'+b1, b2+'）'];
+  }
+  if(full.length<=14) return [full];
+  var h=full.slice(0,14), s2=h.lastIndexOf(' ');
+  if(s2>=4) return [full.slice(0,s2), full.slice(s2+1)];
+  var rest=full.slice(13);
+  if(rest.length<=13) return [full.slice(0,13), rest];
+  return [full.slice(0,13), rest.slice(0,13), rest.slice(13,26)+(rest.length>26?'…':'')];
+}
+function renderGraph(){
+  var box=document.getElementById('evo-graph');
+  if(!box) return;
+  var edges=arr((D.evolution||{}).edges);
+  if(!edges.length){ box.innerHTML='<div class="note">尚未录入关系边。</div>'; return; }
+  try{ box.innerHTML=svgGraph(edges); box.classList.add('rendered'); }
+  catch(e){ box.innerHTML='<div class="note">关系图渲染失败，下方关系边列表完整可用。</div>'; }
+}
+function buildStamp(){
+  var el=document.getElementById('build-stamp');
+  if(!el) return;
+  var g=(typeof window!=='undefined'&&window.SITE_DATA_GENERATED)||'';
+  var c=stats();
+  var d=(D.domain||{}).stats||{};
+  if(!d.directions){ el.textContent=' · 数据构建 '+g+' · ⚠ 统计缺失'; el.style.color='#b91c1c'; return; }
+  var bad=['directions','algorithms','papers','theory','stories','assessments'].filter(function(k){
+    return d[k]!==undefined&&c[k]!==undefined&&d[k]!==c[k];
+  });
+  el.textContent=' · 数据构建 '+g+(bad.length?' · ⚠ 统计不一致：'+bad.join(','):'');
+  if(bad.length) el.style.color='#b91c1c';
+}
+function afterRender(){
+  buildStamp();
+  renderMath();
+  renderGraph();
+  refreshProgress();
+}
+
+/* ---------- router ---------- */
+function navHtml(){
+  return NAV.map(function(n){
+    return '<a class="nav-item" data-nav="'+n[0]+'" href="#/'+n[0]+'"><span class="num">'+n[2]+'</span>'+esc(n[1])+'</a>';
+  }).join('');
+}
+function setActive(page){
+  var links=navList.querySelectorAll('.nav-item');
+  for(var i=0;i<links.length;i++){
+    links[i].classList.toggle('active', links[i].getAttribute('data-nav')===page);
+  }
+  var item=NAV.filter(function(n){return n[0]===page;})[0];
+  crumb.textContent = item ? item[1] : '领域总览';
+}
+function safeDecode(x){try{return decodeURIComponent(x);}catch(e){return x;}}
+function route(){
+  if(!D){
+    view.innerHTML='<div class="empty">数据未加载：请先运行 <code>python3 scripts/bundle_data.py --site site</code> 生成 <code>site/data/bundle.js</code>。</div>';
+    return;
+  }
+  var raw=(location.hash||'#/home').replace(/^#\/?/,'')||'home';
+  var parts=raw.split('/');
+  var page=parts[0]||'home';
+  var id=parts[1]?safeDecode(parts[1]):'';
+  var fn=PAGES[page];
+  document.body.classList.remove('nav-open');
+  if(!fn){
+    view.innerHTML='<section class="section"><h1>未找到该页面</h1><p class="note">地址 <code>#/'+esc(page)+'</code> 不存在。<a href="#/home">返回领域总览</a></p></section>';
+    setActive('');
+    afterRender();
+    window.scrollTo(0,0);
+    return;
+  }
+  view.innerHTML=fn(id);
+  setActive(page);
+  afterRender();
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',route);
+
+/* ---------- stats ---------- */
+function stats(){
+  var dirs=arr(D.directions), algs=arr(D.algorithms), papers=arr(D.papers);
+  return {
+    directions:dirs.length,
+    classic_algorithms:algs.filter(function(a){return a.tier==='classic';}).length,
+    core_papers:papers.filter(function(p){return p.type==='foundational'||p.type==='classic';}).length,
+    recent_papers:papers.filter(function(p){return p.type==='recent'||p.type==='latest';}).length,
+    total_papers:papers.length,
+    algorithms:algs.length,
+    papers:papers.length,
+    theory:arr(D.theory).length,
+    stories:arr(D.stories).length,
+    assessments:arr(D.assessments).length
+  };
+}
+
+/* ---------- pages ---------- */
+var PAGES={};
+
+PAGES.home=function(){
+  var d=D.domain||{}, st=stats(), p=progressInfo(), cov=D.coverage||{};
+  var statsHtml=[
+    [st.directions,'研究方向'],[st.classic_algorithms,'经典算法'],[st.core_papers,'核心论文'],
+    [st.recent_papers,'近年论文'],[st.theory,'理论课'],[st.assessments,'考核题']
+  ].map(function(s){ return '<div class="stat"><b>'+s[0]+'</b><span>'+s[1]+'</span></div>'; }).join('');
+  var path=arr(d.learning_path).map(function(g,i){
+    return '<div class="card" style="padding:16px 18px"><div class="tag-row">'+chip('阶段 '+(i+1),'amber')+'</div>'+
+      '<h3>'+esc(g.stage||'')+'</h3><ul class="bullets small" style="margin-bottom:0">'+
+      arr(g.items).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
+  }).join('');
+  var covRows=['google_scholar','chatgpt','youtube'].map(function(k){
+    var c=(cov.searched||{})[k]||{}, stt=c.status||'unknown';
+    var notRun=(c.executed===false)||(stt==='blocked' && /未执行/.test(String(c.note||'')+String(c.fallback||'')));
+    var cls=stt==='ok'?'green':stt==='partial'?'amber':(notRun?'gray':'red');
+    var label={google_scholar:'Google Scholar',chatgpt:'ChatGPT',youtube:'YouTube'}[k];
+    return '<div class="edge"><span class="rel">'+esc(label)+'</span>'+chip(notRun?'未执行':stt,cls)+
+      '<span class="note">'+esc(c.fallback||c.note||'')+'</span></div>';
+  }).join('');
+  return '<section class="hero">'+
+    '<div class="hero-kicker">AI 领域研究与教学 · 研究 / 教学 / 交互式知识库</div>'+
+    '<h1>'+esc(d.name||'领域教学站')+'</h1>'+
+    '<div class="hero-en">'+esc(d.name_en||'')+'</div>'+
+    '<p class="hero-tag">'+esc(d.tagline||'')+'</p>'+
+    '<div class="hero-actions">'+
+      link('#/map','进入方向地图','btn')+
+      link('#/story','从故事开始','btn ghost')+
+      link('#/exam','去考试','btn ghost')+
+    '</div></section>'+
+    '<section class="section" style="padding-top:0"><figure class="figure diagram">'+
+      '<svg viewBox="0 0 1000 170" role="img" aria-label="MOPD 五层知识链">'+
+        '<defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#b8863f"/></marker></defs>'+
+        '<g font-family="sans-serif">'+
+          '<rect x="8" y="34" width="180" height="86" rx="10" fill="#f6efe2" stroke="#d8c7a6"/>'+
+          '<text x="98" y="60" text-anchor="middle" font-size="20" fill="#7a5a22" font-weight="700">目标</text>'+
+          '<text x="98" y="84" text-anchor="middle" font-size="12.5" fill="#6b6255">软标签 / reverse KL</text>'+
+          '<text x="98" y="103" text-anchor="middle" font-size="12.5" fill="#6b6255">token advantage</text>'+
+          '<rect x="208" y="34" width="180" height="86" rx="10" fill="#eef4f8" stroke="#c9dbe6"/>'+
+          '<text x="298" y="66" text-anchor="middle" font-size="20" fill="#255a75" font-weight="700">采样</text>'+
+          '<text x="298" y="92" text-anchor="middle" font-size="13" fill="#5a6a72">on-policy / λ 混合 / 异步</text>'+
+          '<rect x="408" y="34" width="180" height="86" rx="10" fill="#eef6ef" stroke="#cbe3cf"/>'+
+          '<text x="498" y="66" text-anchor="middle" font-size="20" fill="#2c6b3f" font-weight="700">路由</text>'+
+          '<text x="498" y="92" text-anchor="middle" font-size="13" fill="#5a6a5f">样本级 / token 级 / 能力感知</text>'+
+          '<rect x="608" y="34" width="180" height="86" rx="10" fill="#f7eef1" stroke="#e3cbd5"/>'+
+          '<text x="698" y="66" text-anchor="middle" font-size="20" fill="#7a2f4a" font-weight="700">预算</text>'+
+          '<text x="698" y="92" text-anchor="middle" font-size="13" fill="#6b5a62">headroom / 并行 / 投影 / 陈旧上界</text>'+
+          '<rect x="808" y="34" width="184" height="86" rx="10" fill="#f2f0f7" stroke="#d5cfe4"/>'+
+          '<text x="900" y="66" text-anchor="middle" font-size="20" fill="#4a3d75" font-weight="700">治理</text>'+
+          '<text x="900" y="92" text-anchor="middle" font-size="13" fill="#625a70">资格 / 证据 / 过程图 / 未来验证</text>'+
+          '<path d="M188,77 L204,77" stroke="#b8863f" stroke-width="2" marker-end="url(#ah)"/>'+
+          '<path d="M388,77 L404,77" stroke="#b8863f" stroke-width="2" marker-end="url(#ah)"/>'+
+          '<path d="M588,77 L604,77" stroke="#b8863f" stroke-width="2" marker-end="url(#ah)"/>'+
+          '<path d="M788,77 L804,77" stroke="#b8863f" stroke-width="2" marker-end="url(#ah)"/>'+
+          '<text x="500" y="152" text-anchor="middle" font-size="12.5" fill="#8a8378">目标定形状 → 采样定落点 → 路由定来源 → 预算定强度 → 治理定可信度</text>'+
+        '</g>'+
+      '</svg>'+
+      '<figcaption>MOPD 的五层知识链。任何一层缺失，上面的层都会以「指标不动」的形式失败；读全书时按这条链自检。</figcaption>'+
+    '</figure></section>'+
+    '<section class="grid stats" style="margin-bottom:30px">'+statsHtml+'</section>'+
+    '<section class="section"><h2>领域介绍</h2>'+prose(d.intro||'')+
+      (arr(d.scope).length?'<div class="chips">'+arr(d.scope).map(function(x){return chip(x,'blue');}).join('')+'</div>':'')+
+    '</section>'+
+    '<section class="section"><h2>学习路线</h2><div class="grid">'+(path||emptyState('尚未录入学习路线'))+'</div></section>'+
+    '<section class="section"><h2>我的进度</h2>'+
+      '<div class="callout"><b>'+p.done+' / '+p.total+'</b> 个学习单元已完成（'+p.pct+'%）。进度保存在本机浏览器，不上传。</div>'+
+      '<div class="grid">'+
+        link('#/theory','理论深入 · 按依赖顺序学','card')+
+        link('#/deepdive','论文精读 · 按讲次学','card')+
+        link('#/story','入门故事 · 先建直觉','card')+
+      '</div></section>'+
+    '<section class="section"><h2>研究覆盖度</h2>'+
+      '<div class="edge-list">'+covRows+'</div>'+
+      '<div class="callout warn" style="margin-top:14px"><b>已披露缺口 '+arr(cov.gaps).length+' 项。</b> '+
+      esc(cov.limitations||'尚未录入覆盖度说明。')+' 详见 '+link('#/summary','领域总结')+'。</div>'+
+    '</section>'+
+    '<section class="section"><h2>十一个模块</h2><div class="grid">'+
+      [['map','方向地图','按问题划分的研究方向与代表工作'],
+       ['algos','实验与算法库','问题、思想、流程、公式、优劣与后继'],
+       ['papers','论文知识库','10 节结构化分析，可按方向/年份/类型筛选'],
+       ['evolution','算法演进','时间线 + 五类关系图'],
+       ['summary','领域总结','路线对比、趋势、开放问题、学习顺序'],
+       ['book','全书 · 二十四章','叙事层 + 技术深读：从四个师傅到治理清单'],
+       ['story','入门故事','具体场景、完整事件、类比边界'],
+       ['theory','理论深入','8 问卡、公式推导、伪代码、数字例子'],
+       ['deepdive','论文精读','按先修顺序的课程化精读'],
+       ['exam','考试与练习','五层题库、参考答案、薄弱点'],
+       ['appendix','附录 · 术语与案例','术语表与 60 个现场案例']].map(function(m){
+         return linkHtml('#/'+m[0],'<h3>'+esc(m[1])+'</h3><p class="clamp">'+esc(m[2])+'</p>','card');
+       }).join('')+
+    '</div></section>';
+};
+
+PAGES.map=function(id){
+  if(id){
+    var d=byId(D.directions,id);
+    if(!d) return emptyState('未找到该方向：'+id);
+    var algs=arr(D.algorithms).filter(function(a){return a.direction===id;});
+    // 同一篇论文常有「章节实验卡 + 论文复现卡」两张，方向页只留一张：
+    // 优先保留 EP 开头的论文复现卡，避免两张卡显示同一段 idea。
+    var picked=[], byPaper={};
+    algs.forEach(function(a){
+      var key=(arr(a.papers)[0]||a.id);
+      var old=byPaper[key];
+      if(old){
+        if(/^EP/.test(a.name)&&!/^EP/.test(old.name)){ picked[picked.indexOf(old)]=a; byPaper[key]=a; }
+        return;
+      }
+      byPaper[key]=a; picked.push(a);
+    });
+    var papers=arr(D.papers).filter(function(p){return p.direction===id;});
+    var classic=papers.filter(function(p){return p.type==='foundational'||p.type==='classic';});
+    var recent=papers.filter(function(p){return p.type==='recent'||p.type==='latest';});
+    return '<a class="backlink" href="#/map">← 返回方向地图</a>'+
+      '<div class="detail-head"><div class="tag-row">'+chip('研究方向','blue')+'</div>'+
+      '<h1>'+esc(d.name||id)+'</h1><div class="sub">'+esc(d.name_en||'')+'</div>'+
+      '<div class="chips">'+arr(d.core_tech).map(function(x){return chip(x,'blue');}).join('')+'</div></div>'+
+      section('研究什么问题',d.question)+
+      section('为什么需要这个方向',d.why)+
+      '<section class="section"><h2>经典算法（'+picked.length+'）</h2>'+
+        (picked.length?'<div class="grid">'+picked.map(function(a){
+          return linkHtml('#/algos/'+a.id,'<div class="card-top">'+chip(a.year,'amber')+chip(a.tier==='classic'?'经典':'近年','blue')+'</div><h3>'+esc(a.name)+'</h3><p class="clamp">'+esc(a.idea)+'</p>','card');
+        }).join('')+'</div>':emptyState('该方向尚未录入算法'))+'</section>'+
+      '<section class="section"><h2>代表论文</h2>'+
+        (arr(d.key_papers).length?'<div class="chips" style="margin-bottom:12px">'+arr(d.key_papers).map(function(x){return link('#/papers/'+x,paperTitle(x),'chip blue');}).join('')+'</div>':'')+
+        '<div class="two-col">'+
+        '<div><h3 class="small muted">经典 / 奠基（'+classic.length+'）</h3><ul class="bullets">'+
+          (classic.length?classic.map(function(p){return '<li>'+link('#/papers/'+p.id,paperTitle(p.id))+' <span class="muted">'+p.year+'</span></li>';}).join(''):'<li class="muted">暂无</li>')+
+        '</ul></div>'+
+        '<div><h3 class="small muted">近年（'+recent.length+'）</h3><ul class="bullets">'+
+          (recent.length?recent.map(function(p){return '<li>'+link('#/papers/'+p.id,paperTitle(p.id))+' <span class="muted">'+p.year+'</span></li>';}).join(''):'<li class="muted">暂无</li>')+
+        '</ul></div></div></section>'+
+      longSec(d)+
+      section('当前趋势',d.recent)+
+      listSection('未解决的关键问题',d.challenges)+
+      listSection('代表团队 / 作者',d.teams)+
+      (arr(d.related).length?'<section class="section"><h2>关联方向</h2><div class="chips">'+
+        arr(d.related).map(function(x){return link('#/map/'+x,dirName(x),'chip blue');}).join('')+'</div></section>':'');
+  }
+  var cards=arr(D.directions).map(function(d,i){
+    var algs=arr(D.algorithms).filter(function(a){return a.direction===d.id;}).length;
+    var ps=arr(D.papers).filter(function(p){return p.direction===d.id;});
+    var recent=ps.filter(function(p){return p.type==='recent'||p.type==='latest';}).length;
+    return linkHtml('#/map/'+d.id,
+      '<div class="card-top"><span class="muted small">方向 '+String(i+1).padStart(2,'0')+'</span>'+chip(ps.length+' 篇论文','gray')+'</div>'+
+      '<h3>'+esc(d.name||d.id)+'</h3><p class="clamp">'+esc(d.question||'')+'</p>'+
+      '<div class="meta"><span>算法 '+algs+'</span><span>论文 '+ps.length+'</span><span>近年 '+recent+'</span></div>','card');
+  }).join('');
+  return '<div class="detail-head"><h1>领域方向地图</h1>'+
+    '<div class="sub">按"解决什么问题"划分，不按论文标题分类。点击进入方向详情。</div></div>'+
+    (cards?'<div class="grid">'+cards+'</div>':emptyState());
+};
+
+PAGES.algos=function(id){
+  if(id){
+    var a=byId(D.algorithms,id);
+    if(!a) return emptyState('未找到该算法：'+id);
+    var flow=arr(a.flow).map(function(x){return '<li>'+esc(x)+'</li>';}).join('');
+    return '<a class="backlink" href="#/algos">← 返回算法库</a>'+
+      '<div class="detail-head"><div class="tag-row">'+chip(a.year,'amber')+chip(a.tier==='classic'?'经典算法':'近年算法','blue')+chip(dirName(a.direction),'gray')+'</div>'+
+      '<h1>'+esc(a.name||id)+'</h1></div>'+
+      section('解决的问题',a.problem)+
+      section('核心思想',a.idea)+
+      section('工作原理',a.how)+
+      (flow?'<section class="section"><h2>算法流程</h2><ol class="bullets">'+flow+'</ol></section>':'')+
+      (a.formula?'<section class="section"><h2>关键公式</h2><div class="formula">'+esc(a.formula)+'</div></section>':'')+
+      '<section class="section"><div class="two-col"><div><h2>优势</h2><ul class="bullets">'+
+        arr(a.pros).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>'+
+        '<div><h2>不足</h2><ul class="bullets">'+arr(a.cons).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div></div></section>'+
+      longSec(a)+
+      '<section class="section"><h2>相关论文</h2><ul class="bullets">'+
+        arr(a.papers).map(function(p){return '<li>'+link('#/papers/'+p,paperTitle(p))+'</li>';}).join('')+'</ul></section>'+
+      (arr(a.successors).length?'<section class="section"><h2>后续改进</h2><div class="chips">'+
+        arr(a.successors).map(function(x){return link('#/algos/'+x,algName(x),'chip blue');}).join('')+'</div></section>':'');
+  }
+  var dirOpts='<option value="">全部方向</option>'+arr(D.directions).map(function(d){return '<option value="'+esc(d.id)+'">'+esc(d.name)+'</option>';}).join('');
+  var years=Array.from(new Set(arr(D.algorithms).map(function(a){return a.year;}))).sort();
+  var yearOpts='<option value="">全部年份</option>'+years.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');
+  var cards=arr(D.algorithms).map(function(a){
+    return '<a class="card" data-algo-card data-dir="'+esc(a.direction)+'" data-tier="'+esc(a.tier)+'" data-year="'+esc(a.year)+'" data-text="'+esc((a.name||'')+' '+(a.idea||'')+' '+(a.problem||''))+' " href="#/algos/'+a.id+'">'+
+      '<div class="card-top">'+chip(a.year,'amber')+chip(a.tier==='classic'?'经典':'近年',a.tier==='classic'?'blue':'green')+'</div>'+
+      '<h3>'+esc(a.name||a.id)+'</h3><p class="clamp">'+esc(a.idea||'')+'</p>'+
+      '<div class="meta"><span>'+esc(dirName(a.direction))+'</span><span>后继 '+arr(a.successors).length+'</span></div></a>';
+  }).join('');
+  return '<div class="detail-head"><h1>实验与算法库</h1><div class="sub">每个算法回答：解决什么问题、核心思想、流程、公式、优劣与后继。</div></div>'+
+    '<div class="filters">'+
+      '<input id="algo-q" type="search" placeholder="搜索算法名称/思想" value="'+esc(state.search)+'">'+
+      '<select id="algo-dir">'+dirOpts+'</select>'+
+      '<select id="algo-tier"><option value="">全部类型</option><option value="classic">经典</option><option value="recent">近年</option></select>'+
+      '<select id="algo-year">'+yearOpts+'</select>'+
+      '<span class="count" id="algo-count">'+arr(D.algorithms).length+' 个</span>'+
+    '</div>'+
+    (cards?'<div class="grid" id="algo-grid">'+cards+'</div>':emptyState());
+};
+
+PAGES.papers=function(id){
+  if(id){
+    var p=byId(D.papers,id);
+    if(!p) return emptyState('未找到该论文：'+id);
+    var exp=p.experiments||{};
+    var links='';
+    if(p.links&&p.links.paper) links+='<a class="btn small ghost" href="'+esc(p.links.paper)+'" target="_blank" rel="noopener">原文 ↗</a> ';
+    if(p.links&&p.links.code) links+='<a class="btn small ghost" href="'+esc(p.links.code)+'" target="_blank" rel="noopener">代码 ↗</a> ';
+    var figs=arr(p.figures).map(function(f){
+      return '<figure class="img-fig"><img loading="lazy" src="'+esc(f.src)+'" alt="'+esc(f.caption||'')+'"><figcaption>'+esc(f.caption||'')+'</figcaption></figure>';
+    }).join('');
+    var vars=arr(p.variables).map(function(v){return '<li><code>'+esc(v.sym)+'</code>：'+esc(v.meaning)+'</li>';}).join('');
+    var hyper=arr(p.hyperparams).map(function(x){return '<li><b>'+esc(x.name)+'</b> = '+esc(x.value)+' — '+esc(x.role)+'</li>';}).join('');
+    var pipe=arr(p.pipeline).map(function(x){return '<li>'+esc(x)+'</li>';}).join('');
+    var exps='<div class="kv">'+
+      '<dt>数据集</dt><dd>'+arr(exp.datasets).map(esc).join('、')+'</dd>'+
+      '<dt>对比方法</dt><dd>'+arr(exp.baselines).map(esc).join('、')+'</dd>'+
+      '<dt>主要结果</dt><dd>'+esc(exp.results||'')+'</dd>'+
+      '<dt>消融</dt><dd>'+esc(exp.ablations||'')+'</dd>'+
+      '<dt>实验局限</dt><dd>'+esc(exp.limits||'')+'</dd></div>';
+    var prereq=arr(p.prereq).map(function(x){
+      if(byId(D.theory,x)) return link('#/theory/'+x,theoryTitle(x),'chip blue');
+      if(byId(D.papers,x)) return link('#/papers/'+x,paperTitle(x),'chip blue');
+      return chip(x,'gray');
+    }).join('');
+    var selfCheck=listSection('自测问题',p.self_check);
+    return '<a class="backlink" href="#/papers">← 返回论文库</a>'+
+      '<div class="detail-head"><div class="tag-row">'+typeChip(p.type)+chip(p.year,'amber')+chip(dirName(p.direction),'gray')+
+        (p.verified?chip('已核验','green'):chip('未核验','red'))+'</div>'+
+      '<h1>'+esc(p.title||id)+'</h1>'+
+      '<div class="sub">'+esc(arr(p.authors).slice(0,6).join('、'))+(arr(p.authors).length>6?' et al.':'')+' · '+esc(p.venue||'')+'</div>'+
+      '<div class="tag-row">'+links+learnButton('paper',p.id)+'</div>'+
+      '<div class="note">核验：'+esc(p.verification||'未记录')+' · 阅读级别：'+esc(p.read_level||'未标注')+'</div></div>'+
+      (prereq?'<section class="section"><h2>前置知识</h2><div class="chips">'+prereq+'</div></section>':'')+
+      figs+
+      section('研究背景',p.background)+
+      section('核心问题',p.problem)+
+      section('核心思想',p.core_idea)+
+      section('整体架构',p.architecture)+
+      listSection('核心模块',p.modules)+
+      (pipe?'<section class="section"><h2>数据流</h2><ol class="bullets">'+pipe+'</ol></section>':'')+
+      (p.formula?'<section class="section"><h2>关键公式</h2><div class="formula">'+esc(p.formula)+'</div>'+
+        (vars?'<ul class="bullets small">'+vars+'</ul>':'')+'</section>':'')+
+      section('训练 / 推理过程',p.training)+
+      (hyper?'<section class="section"><h2>关键超参</h2><ul class="bullets small">'+hyper+'</ul></section>':'')+
+      section('工作原理走查',p.walkthrough)+
+      (p.pseudocode?'<section class="section"><h2>伪代码</h2><pre>'+esc(p.pseudocode)+'</pre></section>':'')+
+      '<section class="section"><h2>实验分析</h2>'+exps+'</section>'+
+      listSection('创新点',p.innovation)+
+      listSection('设计优点',p.strengths)+
+      listSection('局限',p.limitations)+
+      listSection('可改进方向',p.future_work)+
+      section('技术影响',p.impact)+
+      (arr(p.successors).length?'<section class="section"><h2>后续工作</h2><div class="chips">'+
+        arr(p.successors).map(function(x){return link('#/papers/'+x,paperTitle(x),'chip blue');}).join('')+'</div></section>':'')+
+      longSec(p)+
+      selfCheck+
+      section('论文总结',p.summary,'lead');
+  }
+  var dirOpts='<option value="">全部方向</option>'+arr(D.directions).map(function(d){return '<option value="'+esc(d.id)+'">'+esc(d.name)+'</option>';}).join('');
+  var years=Array.from(new Set(arr(D.papers).map(function(p){return p.year;}))).sort().reverse();
+  var yearOpts='<option value="">全部年份</option>'+years.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');
+  var cards=arr(D.papers).map(function(p){
+    return '<a class="card" data-paper-card data-dir="'+esc(p.direction)+'" data-type="'+esc(p.type)+'" data-year="'+esc(p.year)+'" data-text="'+esc((p.title||'')+' '+(p.title_zh||'')+' '+(p.authors||[]).join(' ')+' '+(p.core_idea||''))+' " href="#/papers/'+p.id+'">'+
+      '<div class="card-top">'+typeChip(p.type)+chip(p.year,'amber')+'</div>'+
+      '<h3>'+esc(p.title||p.id)+'</h3>'+
+      '<p class="clamp">'+esc(p.core_idea||p.summary||'')+'</p>'+
+      '<div class="meta"><span>'+esc(dirName(p.direction))+'</span><span>'+esc(p.venue||'')+'</span>'+
+        (p.verified?'<span class="chip green">已核验</span>':'')+'</div></a>';
+  }).join('');
+  return '<div class="detail-head"><h1>论文知识库</h1><div class="sub">按方向 / 年份 / 类型筛选；点开是完整的 10 节分析，不是摘要。</div></div>'+
+    '<div class="filters">'+
+      '<input id="paper-q" type="search" placeholder="搜索标题/作者/核心思想" value="'+esc(state.search)+'">'+
+      '<select id="paper-dir">'+dirOpts+'</select>'+
+      '<select id="paper-type"><option value="">全部类型</option><option value="foundational">奠基性</option><option value="classic">经典</option><option value="recent">近年</option><option value="latest">最新</option></select>'+
+      '<select id="paper-year">'+yearOpts+'</select>'+
+      '<span class="count" id="paper-count">'+arr(D.papers).length+' 篇</span>'+
+    '</div>'+
+    (cards?'<div class="grid" id="paper-grid">'+cards+'</div>':emptyState());
+};
+
+PAGES.evolution=function(){
+  var ev=D.evolution||{}, tl=arr(ev.timeline).slice().sort(function(a,b){return (a.year||0)-(b.year||0);});
+  var edges=arr(ev.edges);
+  var tlHtml=tl.map(function(t){
+    return '<div class="tl-item"><div class="tl-year">'+esc(t.year||'')+'</div>'+
+      '<h3>'+esc(t.title||'')+'</h3>'+prose(t.note||'')+
+      (t.paper?'<div class="note">'+link('#/papers/'+t.paper,paperTitle(t.paper))+'</div>':'')+'</div>';
+  }).join('');
+  var groups={inherit:[],improve:[],replace:[],extend:[],parallel:[]};
+  edges.forEach(function(e){ (groups[e.type]||groups.parallel).push(e); });
+  var relLabel={inherit:'直接继承',improve:'局部改进',replace:'结构替代',extend:'理论扩展',parallel:'并行路线'};
+  var edgeHtml=Object.keys(groups).map(function(k){
+    if(!groups[k].length) return '';
+    return '<h3 class="small" style="margin:16px 0 8px">'+relLabel[k]+'（'+groups[k].length+'）</h3><div class="edge-list">'+
+      groups[k].map(function(e){
+        return '<div class="edge"><span class="rel '+k+'">'+k+'</span><span>'+
+          link('#/algos/'+e.from,algName(e.from))+' → '+link('#/algos/'+e.to,algName(e.to))+
+          '</span><span class="note">'+esc(e.note||'')+'</span></div>';
+      }).join('')+'</div>';
+  }).join('');
+  var graph=svgGraph(edges);
+  return '<div class="detail-head"><h1>算法演进</h1><div class="sub">时间线 + 五类关系：继承、改进、替代、扩展、并行。'+
+    (ev.external_review?' 外部评审：'+esc(ev.external_review)+'。':'')+'</div></div>'+
+    '<section class="section"><h2>时间线</h2>'+(tlHtml?'<div class="tl">'+tlHtml+'</div>':emptyState('尚未录入时间线'))+'</section>'+
+    '<section class="section"><h2>关系图</h2>'+
+      '<div id="evo-graph" style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;min-height:60px">'+
+      (edges.length?graph:'<div class="note">尚未录入关系边。</div>')+'</div>'+
+      '<div class="legend">'+Object.keys(REL_COLORS).map(function(k){
+        return '<span><i style="background:'+REL_COLORS[k]+'"></i>'+relLabel[k]+'（'+k+'）</span>';
+      }).join('')+'<span class="muted">箭头：前驱 → 后继；并行边用虚线、不带箭头</span></div></section>'+
+    '<section class="section"><h2>关系边（逐条说明）</h2>'+(edgeHtml||emptyState('尚未录入关系边'))+'</section>';
+};
+
+PAGES.summary=function(){
+  var s=D.summary||{}, cov=D.coverage||{};
+  var secs=arr(s.sections).map(function(x){return '<section class="section"><h2>'+esc(x.title||'')+'</h2>'+prose(x.body||'')+'</section>';}).join('');
+  var comps=arr(s.comparisons).map(function(c){
+    var head=arr(c.headers).map(function(h){return '<th>'+esc(h)+'</th>';}).join('');
+    var rows=arr(c.rows).map(function(r){return '<tr>'+arr(r).map(function(x){return '<td>'+esc(x)+'</td>';}).join('')+'</tr>';}).join('');
+    return '<section class="section"><h2>'+esc(c.title||'对比')+'</h2><div class="table-wrap"><table><thead><tr>'+head+'</tr></thead><tbody>'+rows+'</tbody></table></div></section>';
+  }).join('');
+  var gaps=arr(cov.gaps).map(function(g){return '<li><b>'+esc(g.item||'')+'</b> — '+esc(g.reason||'')+'</li>';}).join('');
+  return '<div class="detail-head"><h1>领域总结</h1><div class="sub">知识体系、路线对比、趋势、开放问题与覆盖度披露。</div></div>'+
+    (secs||emptyState('尚未录入总结'))+comps+
+    listSection('技术趋势',s.trends)+
+    listSection('尚未解决的关键问题',s.open_problems)+
+    listSection('未来研究机会',s.future)+
+    '<section class="section"><h2>推荐学习顺序</h2><ol class="bullets">'+
+      arr(s.learning_order).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></section>'+
+    '<section class="section"><h2>覆盖度与缺口</h2>'+
+      (gaps?'<ul class="bullets">'+gaps+'</ul>':'<p class="muted">未记录缺口。</p>')+
+      '<div class="callout warn"><b>局限：</b>'+esc(cov.limitations||'未记录')+'（核验日期 '+esc(cov.verified_at||'未记录')+'）</div>'+
+      (s.external_review?'<div class="callout ok"><b>外部评审：</b>'+esc(s.external_review)+'</div>':'')+
+    '</section>';
+};
+
+function bookSecs(){ return (D && D.book && arr(D.book.sections)) || []; }
+function bookById(id){ var b=bookSecs(); for(var i=0;i<b.length;i++){ if(b[i].id===id) return b[i]; } return null; }
+function bookPageHTML(s){ return '<div class="bookpage">'+s.html+'</div>'; }
+
+PAGES.book=function(id){
+  var secs=bookSecs();
+  if(!secs.length) return emptyState('全书数据缺失：site/data/book.json');
+  if(id){
+    var s=bookById(id);
+    if(!s) return emptyState('未找到该章节：'+id);
+    var idx=secs.indexOf(s), prev=idx>0?secs[idx-1]:null, next=idx<secs.length-1?secs[idx+1]:null;
+    var nch=secs.filter(function(x){return /^ch\d+$/.test(x.id);}).length;
+    return '<a class="backlink" href="#/book">← 返回全书目录</a>'+
+      '<div class="detail-head"><div class="tag-row">'+chip('全书','amber')+chip(nch+' 章','gray')+'</div>'+
+      '<h1>'+esc(s.label+' · '+s.title)+'</h1>'+(s.en?'<div class="sub">'+esc(s.en)+'</div>':'')+'</div>'+
+      bookPageHTML(s)+
+      '<div class="booknav">'+(prev?link('#/book/'+prev.id,'← '+prev.label+' '+prev.title,'btn ghost'):'<span></span>')+
+      (next?link('#/book/'+next.id,next.label+' '+next.title+' →','btn'):'<span></span>')+'</div>';
+  }
+  var nch=secs.filter(function(x){return /^ch\d+$/.test(x.id);}).length;
+  var cards=secs.map(function(s){
+    return linkHtml('#/book/'+s.id,'<div class="card-top">'+chip(s.label,'amber')+(s.en?chip(s.en,'gray'):'')+'</div>'+
+      '<h3>'+esc(s.title)+'</h3>','card');
+  }).join('');
+  return '<div class="detail-head"><h1>'+esc((D.book&&D.book.title)||'全书')+'</h1>'+
+    '<div class="sub">'+esc((D.book&&D.book.subtitle)||'')+' · '+nch+' 章正文</div></div>'+
+    '<div class="callout">'+esc((D.book&&D.book.note)||'')+'</div>'+
+    (cards?'<div class="grid">'+cards+'</div>':emptyState());
+};
+
+PAGES.story=function(id){
+  if(id){
+    var s=byId(D.stories,id);
+    if(!s) return emptyState('未找到该故事：'+id);
+    var roles=arr(s.roles).map(function(r){return '<tr><td>'+esc(r.role)+'</td><td>'+esc(r.maps_to)+'</td><td>'+esc(r.duty||'')+'</td></tr>';}).join('');
+    var plot=arr(s.plot).map(function(x,i){
+      return '<div class="tl-item"><div class="tl-year">第 '+(i+1)+' 幕</div><h3>'+esc(x.act||'')+'</h3>'+prose(x.text||'')+'</div>';
+    }).join('');
+    var mapping=arr(s.mapping).map(function(m){return '<tr><td>'+esc(m.concept)+'</td><td>'+esc(m.entity)+'</td></tr>';}).join('');
+    var map=(D.book&&D.book.story_map)||{}, chIds=arr(map[s.id]), chHTML='';
+    chIds.forEach(function(cid){ var c=bookById(cid); if(c){ chHTML+='<section class="section">'+
+      '<div class="tag-row">'+chip('全书 · '+c.label,'blue')+link('#/book/'+cid,'单独阅读 →','chip blue')+'</div>'+
+      bookPageHTML(c)+'</section>'; } });
+    return '<a class="backlink" href="#/story">← 返回故事列表</a>'+
+      '<div class="detail-head"><div class="tag-row">'+chip('入门故事','amber')+learnButton('story',s.id)+'</div>'+
+      '<h1>'+esc(s.title||id)+'</h1></div>'+
+      (chHTML?'<div class="callout"><b>完整章节</b>：这个故事对应的正文已按「专业导读 → 故事 → 工匠笔记」展开在下方；'+
+        '只想看梗概，可跳到「概念映射」与「类比边界」两节。</div>'+chHTML:'')+
+      longSec(s)+
+      section('故事背景',s.scene)+
+      '<section class="section"><h2>角色设定</h2><div class="table-wrap"><table><thead><tr><th>故事角色</th><th>对应概念</th><th>职责</th></tr></thead><tbody>'+roles+'</tbody></table></div></section>'+
+      '<section class="section"><h2>剧情推进</h2><div class="tl">'+plot+'</div></section>'+
+      '<section class="section"><h2>概念映射</h2><div class="table-wrap"><table><thead><tr><th>技术概念</th><th>故事实体</th></tr></thead><tbody>'+mapping+'</tbody></table></div></section>'+
+      '<section class="section"><h2>类比边界（哪里不像）</h2><div class="callout warn"><ul class="bullets">'+
+        arr(s.boundaries).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div></section>'+
+      (arr(s.covers).length?'<section class="section"><h2>覆盖的概念</h2><div class="chips">'+
+        arr(s.covers).map(function(x){return chip(x,'blue');}).join('')+'</div></section>':'');
+  }
+  var cards=arr(D.stories).map(function(s){
+    return linkHtml('#/story/'+s.id,'<div class="card-top">'+chip('故事','amber')+chip(arr(s.plot).length+' 幕','gray')+'</div>'+
+      '<h3>'+esc(s.title||s.id)+'</h3><p class="clamp">'+esc(s.scene||'')+'</p>','card');
+  }).join('');
+  return '<div class="detail-head"><h1>入门故事</h1><div class="sub">先建直觉：具体场景、完整事件、瓶颈爆发、类比边界。</div></div>'+
+    '<div class="callout"><b>五个故事怎么配合</b>：修车行讲全景（on-policy、梯度冲突、路由、状态错位），夜班讲异步与陈旧，派单表讲路由粒度，账房讲预算与效率，考场讲评测与验证。五幕分别对应「为什么、什么时候、听谁、听多少、该不该信」，读完再进理论卡会顺很多。</div>'+
+    (cards?'<div class="grid">'+cards+'</div>':emptyState());
+};
+
+function topoTheory(){
+  var list=arr(D.theory).slice(), map={}, out=[], seen={}, temp={};
+  list.forEach(function(x){ map[x.id]=x; });
+  function visit(n){
+    if(!n || seen[n.id] || temp[n.id]) return;
+    temp[n.id]=true;
+    arr(n.prereq).forEach(function(pid){ visit(map[pid]); });
+    temp[n.id]=false; seen[n.id]=true; out.push(n);
+  }
+  list.forEach(visit);
+  return out;
+}
+
+PAGES.theory=function(id){
+  if(id){
+    var t=byId(D.theory,id);
+    if(!t) return emptyState('未找到该理论卡：'+id);
+    var vars=arr(t.variables).map(function(v){return '<li><code>'+esc(v.sym)+'</code>：'+esc(v.meaning)+'</li>';}).join('');
+    var pre=arr(t.prereq).map(function(x){return link('#/theory/'+x,theoryTitle(x),'chip blue');}).join('');
+    return '<a class="backlink" href="#/theory">← 返回理论课程</a>'+
+      '<div class="detail-head"><div class="tag-row">'+chip(dirName(t.direction),'gray')+learnButton('theory',t.id)+'</div>'+
+      '<h1>'+esc(t.title||id)+'</h1>'+(pre?'<div class="chips">'+pre+'</div>':'')+'</div>'+
+      section('通俗解释',t.plain,'lead')+
+      section('严格定义',t.definition)+
+      (t.formula?'<section class="section"><h2>数学原理</h2><div class="formula">'+esc(t.formula)+'</div>'+
+        (vars?'<ul class="bullets small">'+vars+'</ul>':'')+'</section>':'')+
+      section('推导',t.derivation)+
+      section('带数字的例子',t.example)+
+      (t.pseudocode?'<section class="section"><h2>伪代码</h2><pre>'+esc(t.pseudocode)+'</pre></section>':'')+
+      longSec(t)+
+      section('系统实践',t.system_note)+
+      listSection('局限与失效条件',t.limits)+
+      (arr(t.papers).length?'<section class="section"><h2>关联论文</h2><ul class="bullets">'+
+        arr(t.papers).map(function(p){return '<li>'+link('#/papers/'+p,paperTitle(p))+'</li>';}).join('')+'</ul></section>':'');
+  }
+  var ordered=topoTheory();
+  var cards=ordered.map(function(t,i){
+    return linkHtml('#/theory/'+t.id,'<div class="card-top"><span class="muted small">第 '+(i+1)+' 讲</span>'+chip(arr(t.prereq).length?'需前置':'入口','gray')+'</div>'+
+      '<h3>'+esc(t.title||t.id)+'</h3><p class="clamp">'+esc(t.plain||'')+'</p>'+
+      '<div class="meta"><span>'+esc(dirName(t.direction))+'</span><span>'+arr(t.limits).length+' 条局限</span></div>','card');
+  }).join('');
+  return '<div class="detail-head"><h1>理论深入</h1><div class="sub">按先修依赖排序：从直觉到定义、公式、推导、例子与伪代码。</div></div>'+
+    (cards?'<div class="grid">'+cards+'</div>':emptyState());
+};
+
+PAGES.deepdive=function(id){
+  if(id){
+    var p=byId(D.papers,id);
+    if(!p) return emptyState('未找到该讲：'+id);
+    var ordered=arr(D.papers).slice().sort(function(a,b){return (a.order||999)-(b.order||999) || (a.year||0)-(b.year||0);});
+    var idx=ordered.findIndex(function(x){return x.id===id;});
+    var prev=idx>0?ordered[idx-1]:null, next=idx>=0&&idx<ordered.length-1?ordered[idx+1]:null;
+    var body=PAGES.papers(id).replace(/<a class="backlink"[^>]*>← 返回论文库<\/a>/,'');
+    return '<a class="backlink" href="#/deepdive">← 返回精读课程</a>'+
+      '<div class="callout"><b>第 '+(idx+1)+' 讲</b> · 先修：'+(arr(p.prereq).length?arr(p.prereq).map(function(x){return byId(D.theory,x)?theoryTitle(x):paperTitle(x);}).join('、'):'无')+'</div>'+
+      section('相对上一讲改了什么',p.diff_from_prev)+
+      body+
+      '<div class="divider"></div><div class="two-col">'+
+        (prev?'<div>'+link('#/deepdive/'+prev.id,'← 上一讲：'+paperTitle(prev.id),'btn ghost small')+'</div>':'<div></div>')+
+        (next?'<div style="text-align:right">'+link('#/deepdive/'+next.id,'下一讲：'+paperTitle(next.id)+' →','btn small')+'</div>':'<div></div>')+
+      '</div>';
+  }
+  var ordered=arr(D.papers).slice().sort(function(a,b){return (a.order||999)-(b.order||999) || (a.year||0)-(b.year||0);});
+  var cards=ordered.map(function(p,i){
+    return linkHtml('#/deepdive/'+p.id,'<div class="card-top"><span class="muted small">第 '+(i+1)+' 讲</span>'+typeChip(p.type)+'</div>'+
+      '<h3>'+esc(p.title||p.id)+'</h3><p class="clamp">'+esc(p.diff_from_prev||p.core_idea||'')+'</p>'+
+      '<div class="meta"><span>'+esc(p.year)+'</span><span>'+esc(dirName(p.direction))+'</span></div>','card');
+  }).join('');
+  return '<div class="detail-head"><h1>论文精读</h1><div class="sub">按先修顺序排列的课程：每讲包含背景、架构、公式、走查、实验与自测。</div></div>'+
+    (cards?'<div class="grid">'+cards+'</div>':emptyState());
+};
+
+PAGES.appendix=function(){
+  var a=D.appendix||{};
+  if(!a.long_html) return emptyState('附录数据缺失：site/data/appendix.json');
+  return '<div class="detail-head"><h1>附录 · 术语与案例</h1><div class="sub">术语表与 60 个现场案例：查词、对照、复盘用。</div></div>'+
+    longSec(a);
+};
+
+PAGES.exam=function(){
+  var p=loadProgress();
+  var qs=arr(D.assessments);
+  var weak=Object.keys(p.mastery).filter(function(k){return p.mastery[k]==='weak';}).map(function(k){return k.split(':')[1];});
+  var weakHtml='';
+  if(weak.length){
+    weakHtml='<div class="weak"><b>薄弱点（'+weak.length+'）：</b>'+
+      weak.map(function(qid){
+        var q=byId(D.assessments,qid);
+        return q?'<div>· '+esc(q.question.slice(0,60))+'… <a href="#/exam" data-jump="'+esc(qid)+'">定位</a></div>':'';
+      }).join('')+'</div>';
+  }
+  var cards=qs.map(function(q){
+    var refLink='';
+    if(q.module==='theory') refLink=link('#/theory/'+q.ref,theoryTitle(q.ref),'chip blue');
+    else if(q.module==='paper') refLink=link('#/papers/'+q.ref,paperTitle(q.ref),'chip blue');
+    else if(q.module==='story') refLink=link('#/story/'+q.ref,storyTitle(q.ref),'chip blue');
+    else if(q.module==='algo') refLink=link('#/algos/'+q.ref,algName(q.ref),'chip blue');
+    var key=arr(q.key_points).map(function(x){return '<li>'+esc(x)+'</li>';}).join('');
+    var err=arr(q.common_errors).map(function(x){return '<li>'+esc(x)+'</li>';}).join('');
+    var expl=(q.explanation&&q.explanation!==q.answer)?'<h4>详细解析</h4>'+prose(q.explanation):'';
+    var extra=q.long_html?'<details class="long-extra"><summary>扩展解析：代码锚点 / 数字核算 / 边界清单 / 追问 / 变体</summary><div class="long-form">'+q.long_html+'</div></details>':'';
+    return '<article class="qcard" data-qcard data-level="'+esc(q.level)+'" data-module="'+esc(q.module)+'" data-qid="'+esc(q.id)+'">'+
+      '<div class="qhead">'+chip('第 '+esc(q.level)+' 层','amber')+chip(({paper:'论文',theory:'理论',algo:'算法',story:'故事'})[q.module]||q.module,'gray')+refLink+'<span class="muted small" style="margin-left:auto">'+esc(q.id)+'</span></div>'+
+      '<div class="qbody">'+esc(q.question)+'</div>'+
+      '<textarea placeholder="先在这里作答，再展开参考答案……" data-draft="'+esc(q.id)+'"></textarea>'+
+      '<button class="btn small" data-reveal="'+esc(q.id)+'">显示参考答案与解析</button>'+
+      '<div class="answer" hidden>'+
+        '<h4>标准答案</h4>'+prose(q.answer)+
+        expl+
+        '<h4>关键知识点</h4><ul class="bullets small">'+key+'</ul>'+
+        '<h4>常见错误</h4><ul class="bullets small">'+err+'</ul>'+
+        '<h4>评分标准</h4>'+prose(q.rubric)+
+        extra+
+      '</div>'+
+      '<div class="mastery"><button class="btn small ghost" data-mastery="'+esc(q.id)+':ok">已掌握</button>'+
+        '<button class="btn small ghost" data-mastery="'+esc(q.id)+':weak">未掌握</button>'+
+        '<span class="hint" data-mstate="'+esc(q.id)+'"></span></div>'+
+    '</article>';
+  }).join('');
+  var levelOpts='<option value="">全部层级</option>'+[1,2,3,4,5].map(function(l){return '<option value="'+l+'">第 '+l+' 层</option>';}).join('');
+  var modOpts='<option value="">全部模块</option><option value="story">故事</option><option value="theory">理论</option><option value="paper">论文</option><option value="algo">算法</option>';
+  return '<div class="detail-head"><h1>考试与练习</h1><div class="sub">五层题库：基础理解 → 机制理解 → 理论分析 → 论文分析 → 综合应用。先作答，再展开答案。</div></div>'+
+    weakHtml+
+    '<div class="filters"><select id="exam-level">'+levelOpts+'</select><select id="exam-module">'+modOpts+'</select>'+
+      '<span class="count" id="exam-count">'+qs.length+' 题</span></div>'+
+    '<div id="exam-list">'+(cards||emptyState('尚未录入考核题'))+'</div>';
+};
+
+/* ---------- interactions ---------- */
+document.addEventListener('click',function(e){
+  var t=e.target;
+  var learn=t.closest && t.closest('[data-learn]');
+  if(learn){
+    var key=learn.getAttribute('data-learn');
+    var p=loadProgress();
+    if(p.learned[key]) delete p.learned[key]; else p.learned[key]=true;
+    saveProgress(p);
+    var on=!!p.learned[key];
+    learn.textContent=on?'✓ 已学':'标记已学';
+    learn.classList.toggle('learned',on);
+    learn.classList.toggle('ghost',!on);
+    refreshProgress();
+    return;
+  }
+  var rev=t.closest && t.closest('[data-reveal]');
+  if(rev){
+    var qid=rev.getAttribute('data-reveal');
+    var card=rev.closest('.qcard');
+    var ans=card.querySelector('.answer');
+    ans.hidden=!ans.hidden;
+    rev.textContent=ans.hidden?'显示参考答案与解析':'收起参考答案';
+    if(!ans.hidden) renderMath();
+    return;
+  }
+  var m=t.closest && t.closest('[data-mastery]');
+  if(m){
+    var val=m.getAttribute('data-mastery').split(':');
+    var pr=loadProgress();
+    pr.mastery[val[0]]=val[1];
+    saveProgress(pr);
+    var card2=m.closest('.qcard');
+    var st=card2.querySelector('[data-mstate]');
+    if(st) st.textContent=val[1]==='ok'?'已标记掌握':'已标记未掌握，计入薄弱点';
+    return;
+  }
+  var jump=t.closest && t.closest('[data-jump]');
+  if(jump){
+    e.preventDefault();
+    var q=jump.getAttribute('data-jump');
+    var target=document.querySelector('[data-qid="'+q+'"]');
+    if(target){ target.scrollIntoView({behavior:'smooth',block:'center'}); target.style.outline='2px solid var(--amber)'; setTimeout(function(){target.style.outline='';},1600); }
+    return;
+  }
+});
+
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(t.id==='paper-q'||t.id==='algo-q'){ state.search=t.value; applyFilters(); }
+  if(t.id==='exam-level'||t.id==='exam-module'){ applyExamFilters(); }
+  if(t.hasAttribute && t.hasAttribute('data-draft')){ try{ localStorage.setItem('ait-draft:'+t.getAttribute('data-draft'), t.value); }catch(err){} }
+});
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.id==='paper-dir'||t.id==='paper-type'||t.id==='paper-year'){ applyFilters(); }
+  if(t.id==='algo-dir'||t.id==='algo-tier'||t.id==='algo-year'){ applyFilters(); }
+  if(t.id==='exam-level'||t.id==='exam-module'){ applyExamFilters(); }
+});
+
+function applyFilters(){
+  var paperGrid=document.getElementById('paper-grid');
+  if(paperGrid){
+    var q=(document.getElementById('paper-q')||{}).value||'';
+    var dir=(document.getElementById('paper-dir')||{}).value||'';
+    var type=(document.getElementById('paper-type')||{}).value||'';
+    var year=(document.getElementById('paper-year')||{}).value||'';
+    var n=0;
+    paperGrid.querySelectorAll('[data-paper-card]').forEach(function(c){
+      var ok=(!q||(c.getAttribute('data-text')||'').toLowerCase().indexOf(q.toLowerCase())>=0) &&
+        (!dir||c.getAttribute('data-dir')===dir) && (!type||c.getAttribute('data-type')===type) &&
+        (!year||c.getAttribute('data-year')===year);
+      c.style.display=ok?'':'none'; if(ok)n++;
+    });
+    var cnt=document.getElementById('paper-count'); if(cnt) cnt.textContent=n+' 篇';
+  }
+  var algoGrid=document.getElementById('algo-grid');
+  if(algoGrid){
+    var q2=(document.getElementById('algo-q')||{}).value||'';
+    var dir2=(document.getElementById('algo-dir')||{}).value||'';
+    var tier=(document.getElementById('algo-tier')||{}).value||'';
+    var year2=(document.getElementById('algo-year')||{}).value||'';
+    var n2=0;
+    algoGrid.querySelectorAll('[data-algo-card]').forEach(function(c){
+      var ok=(!q2||(c.getAttribute('data-text')||'').toLowerCase().indexOf(q2.toLowerCase())>=0) &&
+        (!dir2||c.getAttribute('data-dir')===dir2) && (!tier||c.getAttribute('data-tier')===tier) &&
+        (!year2||c.getAttribute('data-year')===year2);
+      c.style.display=ok?'':'none'; if(ok)n2++;
+    });
+    var cnt2=document.getElementById('algo-count'); if(cnt2) cnt2.textContent=n2+' 个';
+  }
+}
+function applyExamFilters(){
+  var level=(document.getElementById('exam-level')||{}).value||'';
+  var mod=(document.getElementById('exam-module')||{}).value||'';
+  var n=0;
+  document.querySelectorAll('[data-qcard]').forEach(function(c){
+    var ok=(!level||c.getAttribute('data-level')===level)&&(!mod||c.getAttribute('data-module')===mod);
+    c.style.display=ok?'':'none'; if(ok)n++;
+  });
+  var cnt=document.getElementById('exam-count'); if(cnt) cnt.textContent=n+' 题';
+}
+
+/* global search */
+(function(){
+  var g=document.getElementById('global-q');
+  if(!g) return;
+  g.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){
+      state.search=g.value.trim();
+      if((location.hash||'').indexOf('#/papers')===0 || (location.hash||'').indexOf('#/algos')===0){ route(); }
+      else location.hash='#/papers';
+    }
+  });
+})();
+
+/* mobile menu */
+(function(){
+  var btn=document.getElementById('menu-btn');
+  if(btn) btn.addEventListener('click',function(){ document.body.classList.toggle('nav-open'); });
+  document.addEventListener('click',function(e){
+    if(document.body.classList.contains('nav-open') && e.target===document.body){ document.body.classList.remove('nav-open'); }
+  });
+})();
+
+/* init */
+navList.innerHTML=navHtml();
+if(!location.hash) location.hash='#/home';
+route();
+window.addEventListener('load',function(){ renderMath(); renderGraph(); });
+setTimeout(function(){ renderMath(); renderGraph(); },800);
+})();
+</script>
+</body>
+</html>

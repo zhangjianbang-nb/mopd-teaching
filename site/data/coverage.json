@@ -1,0 +1,47 @@
+{
+ "searched": {
+  "google_scholar": {
+   "status": "partial",
+   "fallback": "验证码时改用 Semantic Scholar / OpenAlex / DBLP"
+  },
+  "chatgpt": {
+   "status": "ok",
+   "note": "对抗性评审 2026-11-13，全文归档 research/chatgpt/review-20261113.txt；采纳与驳回见 research/chatgpt/decisions.md"
+  },
+  "youtube": {
+   "status": "blocked",
+   "fallback": "改用论文与项目页；顶会 talk 未逐条核验，已在 gaps 披露"
+  }
+ },
+ "covered_directions": [
+  "code-capability-integration",
+  "agentic-coding-longhorizon",
+  "verifiable-teacher-qualification",
+  "distillation-efficiency-systems",
+  "distillation-objectives",
+  "multi-teacher-routing",
+  "evaluation-diagnosis",
+  "failure-modes-governance"
+ ],
+ "gaps": [
+  {
+   "item": "多模态/语音蒸馏",
+   "reason": "超出本站范围，只在交叉处提一句"
+  },
+  {
+   "item": "纯推理引擎优化",
+   "reason": "与蒸馏成本只有间接关系"
+  },
+  {
+   "item": "闭源模型后训练配方",
+   "reason": "无公开论文，只能取技术报告片段"
+  },
+  {
+   "item": "2026-11 之后的预印本",
+   "reason": "检索截止 2026-11-13"
+  }
+ ],
+ "limitations": "36 篇论文中 31 篇全文精读、5 篇页面核验；数字来自论文表格或显式算术，未复现实验；YouTube 渠道未系统访问。",
+ "verified_at": "2026-11-13",
+ "long_html": "<h3>检索了什么</h3>\n<p>本站在 2026-11-11 至 2026-11-13 期间，用 arXiv API、Semantic Scholar、OpenAlex、DBLP 与 Google Scholar 五条渠道检索 MOPD / on-policy distillation / multi-teacher distillation / capability integration 四组关键词，得到 8620 条候选，逐层筛到 36 篇核心论文。每篇论文的元数据都用 arXiv API 或论文页面核验，核验方式与日期写进 papers.json 的 verification 字段。</p>\n<h3>没覆盖什么</h3>\n<p>第一，多模态与语音蒸馏只在中转处提一句，没有独立章节；第二，纯推理引擎优化（KV cache、量化 kernel）不在范围内；第三，商用闭源模型（GPT、Claude、Gemini）的后训练配方没有公开论文，只能从技术报告里取片段；第四，2026 年 11 月之后的预印本未收录。缺口与原因写在 coverage.gaps 里，不假装「已全面检索」。</p>\n<h3>证据分级</h3>\n<p>36 篇论文中，全文精读 31 篇、页面核验 5 篇；数字来自论文表格或由表格做的显式算术，未复现论文实验。凡是「论文没说」的地方，正文会写「未公开」，不用「大概/可能」糊过去。</p>\n<h3>哪些不是 MOPD 的直接组成</h3>\n<p>36 篇里有 7 篇长程 agent 论文、若干工业技术报告与 memory/harness 研究，它们是相邻技术而不是 MOPD 的直接组件。本站用方向标签区分：直接研究多教师 OPD 的进「路由/目标/效率/治理」，只提供机制或工程证据的进「长程 agent / 能力整合」，并在论文卡里写明它解决的问题。相关不等于组成，教学站不把「2026 年所有 agent 后训练」都算成 MOPD 的演进。</p>"
+}

@@ -1,0 +1,430 @@
+[
+ {
+  "id": "story-four-masters",
+  "title": "四个师傅和一辆抖动的车",
+  "scene": "城西高架桥下有一间修车行，铁皮屋顶，四个工位，一台老举升机。门口挂着一块木牌：什么都修，修不好不要钱。车行只有一个学徒，叫小周，十九岁，手快胆子大，就是没师傅。",
+  "roles": [
+   {
+    "role": "小周",
+    "maps_to": "学生模型",
+    "duty": "自己采样轨迹，自己承担后果"
+   },
+   {
+    "role": "陈师傅",
+    "maps_to": "电路域教师",
+    "duty": "只在电路相关的 token 上说话"
+   },
+   {
+    "role": "吴师傅",
+    "maps_to": "发动机域教师",
+    "duty": "只在发动机相关的 token 上说话"
+   },
+   {
+    "role": "郑师傅",
+    "maps_to": "结构域教师",
+    "duty": "只在钣金/结构 token 上说话"
+   },
+   {
+    "role": "许师傅",
+    "maps_to": "漆面域教师",
+    "duty": "只在漆面 token 上说话"
+   },
+   {
+    "role": "阿珍",
+    "maps_to": "路由器",
+    "duty": "决定这一辆车该叫哪位师傅"
+   },
+   {
+    "role": "老马",
+    "maps_to": "验证器",
+    "duty": "不修车，只判定修得对不对"
+   },
+   {
+    "role": "老算",
+    "maps_to": "token 预算",
+    "duty": "记录每个师傅每次开口的工位费"
+   }
+  ],
+  "plot": [
+   {
+    "act": "开张",
+    "text": "开张第一天，来了一辆混动车，怠速时方向盘抖。小周先拆火花塞、再看节气门、最后泡喷油嘴，忙了四十分钟车还是抖。四个师傅蹲在门口谁也不动手——规矩是学徒不动手，师傅不开口。小周拆到第三遍，陈师傅才说：点火时序偏了半个齿。小周调了，车不抖了。这就是第一条规矩：车是学徒自己拆的，师傅只在他拆到的地方给一句话——on-policy。"
+   },
+   {
+    "act": "会诊",
+    "text": "第二辆车冷启动困难。陈师傅说加两毫秒喷油，吴师傅说减一点进气补偿，两个人方向相反。小周问听谁的，阿珍按车型手册把他派给了吴师傅，车更难启动了。陈师傅说：我们看的不是同一张工单。两个师傅都没错，错的是把两句话当成一句话——梯度冲突。解法不是让谁闭嘴，而是让每个人只在自己看得见的那一段路上说话。"
+   },
+   {
+    "act": "派错单",
+    "text": "第三辆是事故车，纵梁撞弯。阿珍按「事故车优先喷漆组」把许师傅派来，许师傅讲了一下午漆面色差，小周记了两页笔记，纵梁还是弯的。老马试车回来说：这车跑高速会吃胎。阿珍改派单规则：不按车型派，按「这辆车现在卡在哪一步」派——路由。路由错了，学徒学的不是本事，是话术。"
+   },
+   {
+    "act": "旧照片与账本",
+    "text": "入冬接了一辆跑了三十万公里的老越野，四十多道工序跨三个星期。小周每天拍照存档，吴师傅指着一张三天前的照片说气门间隙不对，小周说那是拆之前的照片——状态错位。老算把账本拍在桌上：四个师傅轮流说话，每句话都占一次举升机，电费翻倍，学徒只多学了三道工序。于是定下四条规矩：on-policy、token 级域监督、路由、验证。"
+   }
+  ],
+  "mapping": [
+   {
+    "concept": "学生自采样",
+    "entity": "小周自己拆车"
+   },
+   {
+    "concept": "多教师 token 级监督",
+    "entity": "四个师傅各说自家那一段"
+   },
+   {
+    "concept": "梯度冲突",
+    "entity": "陈师傅与吴师傅方向相反"
+   },
+   {
+    "concept": "路由器",
+    "entity": "阿珍按「卡在哪一步」派单"
+   },
+   {
+    "concept": "状态对齐",
+    "entity": "师傅看的是学徒动手时的那张工单"
+   },
+   {
+    "concept": "token 预算",
+    "entity": "老算的工位费账本"
+   },
+   {
+    "concept": "验证器",
+    "entity": "老马试车"
+   },
+   {
+    "concept": "异步与陈旧",
+    "entity": "夜班看录好的工单"
+   }
+  ],
+  "boundaries": [
+   "真实的教师不会只在一颗螺丝上说话——它给的是整条轨迹上每个 token 的分布，粒度比修车细得多。",
+   "车修坏了可以返工，模型训坏了要重跑；比喻里没有「不可逆」这一层。",
+   "师傅人数在故事里固定是四个，真实 MOPD 可以增删教师，也可以让一个教师覆盖多个域。",
+   "修车行里师傅和学徒看的是同一辆车；模型里教师参数量可能是学生的十倍，这个容量差在故事里没有对应物。"
+  ],
+  "covers": [
+   "ch01",
+   "ch02",
+   "ch03",
+   "ch04",
+   "ch05",
+   "ch06",
+   "ch07",
+   "ch08",
+   "ch09",
+   "ch10",
+   "ch11",
+   "ch12",
+   "ch13",
+   "ch14",
+   "ch15",
+   "ch16",
+   "ch17",
+   "ch18",
+   "ch19",
+   "ch20",
+   "ch21",
+   "ch22",
+   "ch23",
+   "ch24"
+  ],
+  "long_html": "<!--VIS:story-story-four-masters:start--><figure class=\"figure diagram\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 760 207\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\"><text x=\"136.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">上游 · 站在谁肩上</text><rect x=\"38.0\" y=\"44.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">小周</text><rect x=\"38.0\" y=\"87.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"104.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">陈师傅</text><rect x=\"38.0\" y=\"130.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"147.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">吴师傅</text><text x=\"380.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">本文</text><rect x=\"282.0\" y=\"44.0\" width=\"196.0\" height=\"52.0\" rx=\"6\" fill=\"#e9eff5\" stroke=\"#d6e2ec\" stroke-width=\"1.2\"/><text x=\"292.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#163a5a\" font-weight=\"500\" text-anchor=\"start\">开张、会诊、派错单、旧照片与</text><text x=\"292.0\" y=\"78.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#163a5a\" font-weight=\"500\" text-anchor=\"start\">账本</text><text x=\"624.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">下游 · 被谁接走</text><rect x=\"526.0\" y=\"44.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">学生自采样</text><rect x=\"526.0\" y=\"87.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"104.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">多教师 token 级监督</text><rect x=\"526.0\" y=\"130.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"147.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">梯度冲突</text><line x1=\"238.0\" y1=\"108.5\" x2=\"271.0\" y2=\"108.5\" stroke=\"#d8d3c6\" stroke-width=\"1.4\"/><path d=\"M 270.0 104.0 L 270.0 113.0 L 278.0 108.5 Z\" fill=\"#d8d3c6\"/><line x1=\"482.0\" y1=\"108.5\" x2=\"515.0\" y2=\"108.5\" stroke=\"#d8d3c6\" stroke-width=\"1.4\"/><path d=\"M 514.0 104.0 L 514.0 113.0 L 522.0 108.5 Z\" fill=\"#d8d3c6\"/><text x=\"380.0\" y=\"197.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"11.0\" fill=\"#68727d\" font-weight=\"400\" text-anchor=\"middle\">故事 story-four-masters · 角色→剧情→概念（stories.json 字段）</text></svg><figcaption>图 1 · 故事地图：左列是三个核心角色（完整角色表见下方），中列是四幕剧情，右列是映射到的技术概念。</figcaption></figure><!--VIS:story-story-four-masters:end-->"
+ },
+ {
+  "id": "story-night-shift",
+  "title": "夜班的录音机",
+  "scene": "入冬后车行接了长活，白天四个师傅轮番上场，举升机从早占到晚。老算心疼电费，买了两台录音机：白天师傅说的话录下来，夜班放给学徒听。可录音里的工单是白天的，学徒夜里拆的却是另一辆车。",
+  "roles": [
+   {
+    "role": "小周",
+    "maps_to": "学生模型",
+    "duty": "夜里按自己的进度拆车"
+   },
+   {
+    "role": "录音机",
+    "maps_to": "异步 rollout 缓存",
+    "duty": "保存白天教师的 token 级监督"
+   },
+   {
+    "role": "老算",
+    "maps_to": "吞吐/成本约束",
+    "duty": "决定白天录多少、夜里放多少"
+   },
+   {
+    "role": "老马",
+    "maps_to": "陈旧度检查器",
+    "duty": "判断录音是否还对得上今晚的车"
+   }
+  ],
+  "plot": [
+   {
+    "act": "省电",
+    "text": "老算算了一笔账：四个师傅同时在场，举升机一小时要烧三度电；如果白天只留一个师傅说话、其余录音，夜里学徒自己拆、自己听，电费能省一半。他管这叫错峰——异步。"
+   },
+   {
+    "act": "错位",
+    "text": "第一晚，小周拆的是事故车的纵梁，录音里陈师傅讲的却是昨天那辆混动车的点火时序。小周照录音调了点火，纵梁纹丝不动。老马说：录音没有错，错的是录音里的车不是今晚的车——陈旧。"
+   },
+   {
+    "act": "上界",
+    "text": "老马给录音机加了一个计数器：每条录音标上「录于第几步」。规则是：录音与当前步骤差超过 K 步，就不许放。K 从 2 试到 8，K=2 时电费省得少但车修得快，K=8 时电费省一半但返工率翻倍。老算把 K=4 写进账本——陈旧度上界。"
+   },
+   {
+    "act": "夜班的规矩",
+    "text": "夜班最后定下三条：录音必须标步骤；超过 K 步的录音只做参考不做监督；每早老马抽查三条录音，对不上就整批作废。小周说：夜班不是偷懒，是把「师傅在场」换成「师傅的话在场」，但话必须对得上车。"
+   }
+  ],
+  "mapping": [
+   {
+    "concept": "异步蒸馏",
+    "entity": "白天录音、夜里播放"
+   },
+   {
+    "concept": "陈旧 rollout",
+    "entity": "录音里的车不是今晚的车"
+   },
+   {
+    "concept": "陈旧度上界 K",
+    "entity": "录音与当前步骤的差"
+   },
+   {
+    "concept": "吞吐与返工率的权衡",
+    "entity": "电费省一半 vs 返工率翻倍"
+   }
+  ],
+  "boundaries": [
+   "真实异步蒸馏的陈旧度按梯度步计，不是按「拆车步骤」计；故事里的 K 是离散的，真实 K 是连续的时间窗。",
+   "录音是单向的，真实教师可以在任意 token 上给分布；故事把「分布」压成了「一句话」。",
+   "夜班没有考虑教师本身的错误——录音里的师傅也可能说错，故事只讨论了「过期」。"
+  ],
+  "covers": [
+   "ch12",
+   "ch10",
+   "ch11"
+  ],
+  "long_html": "<!--VIS:story-story-night-shift:start--><figure class=\"figure diagram\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 760 207\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\"><text x=\"136.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">上游 · 站在谁肩上</text><rect x=\"38.0\" y=\"44.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">小周</text><rect x=\"38.0\" y=\"87.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"104.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">录音机</text><rect x=\"38.0\" y=\"130.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"147.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">老算</text><text x=\"380.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">本文</text><rect x=\"282.0\" y=\"44.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e9eff5\" stroke=\"#d6e2ec\" stroke-width=\"1.2\"/><text x=\"292.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#163a5a\" font-weight=\"500\" text-anchor=\"start\">省电、错位、上界、夜班的规矩</text><text x=\"624.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">下游 · 被谁接走</text><rect x=\"526.0\" y=\"44.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">异步蒸馏</text><rect x=\"526.0\" y=\"87.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"104.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">陈旧 rollout</text><rect x=\"526.0\" y=\"130.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"147.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">陈旧度上界 K</text><line x1=\"238.0\" y1=\"108.5\" x2=\"271.0\" y2=\"108.5\" stroke=\"#d8d3c6\" stroke-width=\"1.4\"/><path d=\"M 270.0 104.0 L 270.0 113.0 L 278.0 108.5 Z\" fill=\"#d8d3c6\"/><line x1=\"482.0\" y1=\"108.5\" x2=\"515.0\" y2=\"108.5\" stroke=\"#d8d3c6\" stroke-width=\"1.4\"/><path d=\"M 514.0 104.0 L 514.0 113.0 L 522.0 108.5 Z\" fill=\"#d8d3c6\"/><text x=\"380.0\" y=\"197.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"11.0\" fill=\"#68727d\" font-weight=\"400\" text-anchor=\"middle\">故事 story-night-shift · 角色→剧情→概念（stories.json 字段）</text></svg><figcaption>图 1 · 故事地图：左列是三个核心角色（完整角色表见下方），中列是四幕剧情，右列是映射到的技术概念。</figcaption></figure><!--VIS:story-story-night-shift:end-->"
+ },
+ {
+  "id": "story-dispatch-table",
+  "title": "派单员的表格",
+  "scene": "阿珍的派单桌上有一张表：横轴是车型，纵轴是故障类型，格子里写着该叫哪位师傅。表是上一任前台留下的，用了七年。小周发现，同一辆车在表上只能落一个格子，可它往往同时坏三样。",
+  "roles": [
+   {
+    "role": "阿珍",
+    "maps_to": "路由器",
+    "duty": "决定每个 token 该叫哪位师傅"
+   },
+   {
+    "role": "旧表格",
+    "maps_to": "样本级路由",
+    "duty": "按车型/故障选一个教师"
+   },
+   {
+    "role": "新表格",
+    "maps_to": "token 级路由",
+    "duty": "按 token 的域归属选教师"
+   },
+   {
+    "role": "红笔",
+    "maps_to": "能力差距权重",
+    "duty": "学生越不会的地方权重越大"
+   }
+  ],
+  "plot": [
+   {
+    "act": "一格只能落一个",
+    "text": "一辆车同时有电路、发动机、漆面三个毛病，旧表格只能把它归到「发动机组」。阿珍按表派了吴师傅，电路和漆面没人管，车修好一半。小周说：不是师傅不行，是表格太粗——样本级路由。"
+   },
+   {
+    "act": "把格子切开",
+    "text": "阿珍把每个格子切成三行：诊断、拆解、装配。诊断行叫最懂症状的师傅，拆解行叫最懂结构的师傅，装配行叫最懂公差的师傅。同一辆车，三个师傅各说一段——token 级路由。"
+   },
+   {
+    "act": "红笔加权",
+    "text": "小周发现自己对电路最生，对漆面最熟。阿珍用红笔把「学生不会」的格子圈大：电路格子占三行，漆面格子只占半行。吴师傅说：你这是偏心。阿珍说：不是偏心，是按差距分课——能力差距权重。"
+   },
+   {
+    "act": "表格的边界",
+    "text": "新表格用了三个月，阿珍发现两个问题：一是格子边界模糊，有些故障跨三行；二是红笔圈得太大，学生被同一个师傅反复讲同一段，反而学不动。她把红笔改成按周重算，格子边界改成「按 token 归属」而不是「按故障名」。"
+   }
+  ],
+  "mapping": [
+   {
+    "concept": "样本级路由",
+    "entity": "旧表格一格一个师傅"
+   },
+   {
+    "concept": "token 级路由",
+    "entity": "格子切成诊断/拆解/装配三行"
+   },
+   {
+    "concept": "能力差距权重",
+    "entity": "红笔把不会的格子圈大"
+   },
+   {
+    "concept": "路由坍塌",
+    "entity": "红笔太大导致反复讲同一段"
+   }
+  ],
+  "boundaries": [
+   "真实路由器的训练信号来自学生与教师的 KL，不是前台的经验；故事里的「红笔」是人工规则。",
+   "token 级路由在推理时要跑多个教师，故事里没有算这笔成本。",
+   "格子边界在真实模型里是概率的，不是离散的故障名；故事把 soft routing 压成了 hard routing。"
+  ],
+  "covers": [
+   "ch13",
+   "ch14",
+   "ch15"
+  ],
+  "long_html": "<!--VIS:story-story-dispatch-table:start--><figure class=\"figure diagram\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 760 207\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\"><text x=\"136.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">上游 · 站在谁肩上</text><rect x=\"38.0\" y=\"44.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">阿珍</text><rect x=\"38.0\" y=\"87.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"104.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">旧表格</text><rect x=\"38.0\" y=\"130.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"147.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">新表格</text><text x=\"380.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">本文</text><rect x=\"282.0\" y=\"44.0\" width=\"196.0\" height=\"52.0\" rx=\"6\" fill=\"#e9eff5\" stroke=\"#d6e2ec\" stroke-width=\"1.2\"/><text x=\"292.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#163a5a\" font-weight=\"500\" text-anchor=\"start\">一格只能落一个、把格子切开、</text><text x=\"292.0\" y=\"78.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#163a5a\" font-weight=\"500\" text-anchor=\"start\">红笔加权、表格的边界</text><text x=\"624.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">下游 · 被谁接走</text><rect x=\"526.0\" y=\"44.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">样本级路由</text><rect x=\"526.0\" y=\"87.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"104.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">token 级路由</text><rect x=\"526.0\" y=\"130.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"147.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">能力差距权重</text><line x1=\"238.0\" y1=\"108.5\" x2=\"271.0\" y2=\"108.5\" stroke=\"#d8d3c6\" stroke-width=\"1.4\"/><path d=\"M 270.0 104.0 L 270.0 113.0 L 278.0 108.5 Z\" fill=\"#d8d3c6\"/><line x1=\"482.0\" y1=\"108.5\" x2=\"515.0\" y2=\"108.5\" stroke=\"#d8d3c6\" stroke-width=\"1.4\"/><path d=\"M 514.0 104.0 L 514.0 113.0 L 522.0 108.5 Z\" fill=\"#d8d3c6\"/><text x=\"380.0\" y=\"197.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"11.0\" fill=\"#68727d\" font-weight=\"400\" text-anchor=\"middle\">故事 story-dispatch-table · 角色→剧情→概念（stories.json 字段）</text></svg><figcaption>图 1 · 故事地图：左列是三个核心角色（完整角色表见下方），中列是四幕剧情，右列是映射到的技术概念。</figcaption></figure><!--VIS:story-story-dispatch-table:end-->"
+ },
+ {
+  "id": "story-lift-ledger",
+  "title": "账房的算盘",
+  "scene": "老算的账房在车行最里面，一张八仙桌，一把算盘，墙上挂着四张工位图。他不管修车，只管三件事：举升机转了几小时、每个师傅说了几句话、学徒真正学会了几个工序。",
+  "roles": [
+   {
+    "role": "老算",
+    "maps_to": "预算分配器",
+    "duty": "按域分配 token 与工位时长"
+   },
+   {
+    "role": "举升机",
+    "maps_to": "GPU 显存/上下文窗口",
+    "duty": "同一时间只能服务有限的车"
+   },
+   {
+    "role": "四张工位图",
+    "maps_to": "四个教师的并行前向",
+    "duty": "教师前向的显存峰值"
+   },
+   {
+    "role": "算盘",
+    "maps_to": "每 token 成本核算",
+    "duty": "算「每提升一个最弱域分数要多少 token」"
+   }
+  ],
+  "plot": [
+   {
+    "act": "四台举升机",
+    "text": "老算发现四个师傅同时进场，举升机不够用：陈师傅要拆线束、吴师傅要抬发动机、郑师傅要拉车架、许师傅要喷漆，四辆车抢一台举升机。他把工位图贴到墙上，规定每个师傅只能在自己的时段上车——并行前向。"
+   },
+   {
+    "act": "重复的活",
+    "text": "小周学了发动机又学电路，回头发现发动机的手感丢了。老算翻账本：两个师傅的更新方向相反，学徒每学一个新的就忘一个旧的。他请郑师傅做了一块「保护板」，每次更新只许动保护板外的区域——更新投影。"
+   },
+   {
+    "act": "算总账",
+    "text": "月底老算算了三笔账：总 GPU-hours、每域提升分数、最弱域提升分数。他发现总 GPU-hours 涨了 40%，但最弱域只涨了 2 分；而砍掉一个教师、把省下的 token 给最弱域，最弱域涨了 6 分。他把这条写进账本：按 headroom 分配，不按教师数平均。"
+   },
+   {
+    "act": "账本的边界",
+    "text": "老算承认账本有三个盲区：一是教师本身的错误没算进去；二是评测集的污染没算进去；三是「学生容量」这个上限没算进去——学徒的手就那么大，四个师傅一起教也学不下全部。他把三个盲区写在账本封面，提醒下一任账房。"
+   }
+  ],
+  "mapping": [
+   {
+    "concept": "并行教师前向",
+    "entity": "四张工位图分时段"
+   },
+   {
+    "concept": "更新投影/子空间保护",
+    "entity": "保护板外的区域才许动"
+   },
+   {
+    "concept": "按 headroom 分配预算",
+    "entity": "砍一个教师、把 token 给最弱域"
+   },
+   {
+    "concept": "每 token 成本",
+    "entity": "算盘上的三笔账"
+   }
+  ],
+  "boundaries": [
+   "真实 GPU 的并行不是「分时段」，而是同时占用显存；故事把并行压成了排队。",
+   "更新投影在真实模型里是矩阵运算，故事里的「保护板」是二维的，真实子空间是高维的。",
+   "账本只算了显性成本，没算教师训练的前期成本——教师本身也是 RL 训出来的，那笔钱更大。"
+  ],
+  "covers": [
+   "ch10",
+   "ch11",
+   "ch12"
+  ],
+  "long_html": "<!--VIS:story-story-lift-ledger:start--><figure class=\"figure diagram\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 760 207\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\"><text x=\"136.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">上游 · 站在谁肩上</text><rect x=\"38.0\" y=\"44.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">老算</text><rect x=\"38.0\" y=\"87.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"104.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">举升机</text><rect x=\"38.0\" y=\"130.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"147.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">四张工位图</text><text x=\"380.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">本文</text><rect x=\"282.0\" y=\"44.0\" width=\"196.0\" height=\"52.0\" rx=\"6\" fill=\"#e9eff5\" stroke=\"#d6e2ec\" stroke-width=\"1.2\"/><text x=\"292.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#163a5a\" font-weight=\"500\" text-anchor=\"start\">四台举升机、重复的活、算总账</text><text x=\"292.0\" y=\"78.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#163a5a\" font-weight=\"500\" text-anchor=\"start\">、账本的边界</text><text x=\"624.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">下游 · 被谁接走</text><rect x=\"526.0\" y=\"44.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">并行教师前向</text><rect x=\"526.0\" y=\"87.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"104.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">更新投影/子空间保护</text><rect x=\"526.0\" y=\"130.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"147.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">按 headroom 分配预算</text><line x1=\"238.0\" y1=\"108.5\" x2=\"271.0\" y2=\"108.5\" stroke=\"#d8d3c6\" stroke-width=\"1.4\"/><path d=\"M 270.0 104.0 L 270.0 113.0 L 278.0 108.5 Z\" fill=\"#d8d3c6\"/><line x1=\"482.0\" y1=\"108.5\" x2=\"515.0\" y2=\"108.5\" stroke=\"#d8d3c6\" stroke-width=\"1.4\"/><path d=\"M 514.0 104.0 L 514.0 113.0 L 522.0 108.5 Z\" fill=\"#d8d3c6\"/><text x=\"380.0\" y=\"197.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"11.0\" fill=\"#68727d\" font-weight=\"400\" text-anchor=\"middle\">故事 story-lift-ledger · 角色→剧情→概念（stories.json 字段）</text></svg><figcaption>图 1 · 故事地图：左列是三个核心角色（完整角色表见下方），中列是四幕剧情，右列是映射到的技术概念。</figcaption></figure><!--VIS:story-story-lift-ledger:end-->"
+ },
+ {
+  "id": "story-three-gates",
+  "title": "考场的三道门",
+  "scene": "车行后院有一块试车场，老马在入口立了三道门：第一道门查答案，第二道门查过程，第三道门查未来。每辆修好的车都要过三道门，过不了就退回重修。",
+  "roles": [
+   {
+    "role": "老马",
+    "maps_to": "验证器",
+    "duty": "判定答案、过程、未来三步"
+   },
+   {
+    "role": "第一道门",
+    "maps_to": "答案验证（MT-SDPO）",
+    "duty": "答案不对直接退回"
+   },
+   {
+    "role": "第二道门",
+    "maps_to": "过程图一致性",
+    "duty": "过程与答案对不上退回"
+   },
+   {
+    "role": "第三道门",
+    "maps_to": "未来轨迹验证（FTB-OPD）",
+    "duty": "修完之后跑一段，看会不会再坏"
+   }
+  ],
+  "plot": [
+   {
+    "act": "答案门",
+    "text": "第一辆车答案对、过程错：小周把点火时序调对了，但线束接反了。老马只看答案，放行。三天后车又抖了。老马把第一道门加了一条：答案对不算过，线束图要能对上——答案验证只能筛掉一部分错误。"
+   },
+   {
+    "act": "过程门",
+    "text": "第二辆车答案对、过程也对，但过程图里少了一步「路试」。老马把过程图摊开：每一步都要有对应的工单，少一步就退回。小周说：这一步我没写，因为我凭手感。老马说：手感不能当证据——过程图一致性。"
+   },
+   {
+    "act": "未来门",
+    "text": "第三辆车三道门都过，老马还是让它跑了一百公里。跑到八十公里时变速箱异响。老马说：前两道门只看现在，第三道门看未来——未来轨迹验证。他把这一百公里叫「未来验证桥」。"
+   },
+   {
+    "act": "门的代价",
+    "text": "三道门让返工率降了一半，但试车场的油费涨了三倍。老算把账本拿来：每道门都要烧油，第三道门最贵。老马说：那就按风险分配——答案门全检，过程门抽检，未来门只查高风险车。验证也要讲预算。"
+   }
+  ],
+  "mapping": [
+   {
+    "concept": "答案验证",
+    "entity": "第一道门只看答案"
+   },
+   {
+    "concept": "过程图一致性",
+    "entity": "第二道门查工单是否齐全"
+   },
+   {
+    "concept": "未来轨迹验证",
+    "entity": "第三道门跑一百公里"
+   },
+   {
+    "concept": "验证预算",
+    "entity": "三道门的油费"
+   }
+  ],
+  "boundaries": [
+   "真实验证器不是三道离散的门，而是一个连续的打分；故事把验证压成了三档。",
+   "未来轨迹验证在真实模型里要 rollout 多步，成本远高于故事里的一百公里。",
+   "故事没有讨论「验证器本身被奖励黑客」——老马也可能看走眼，这一点在第 18 章单独讲。"
+  ],
+  "covers": [
+   "ch18",
+   "ch19",
+   "ch20"
+  ],
+  "long_html": "<!--VIS:story-story-three-gates:start--><figure class=\"figure diagram\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 760 207\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\"><text x=\"136.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">上游 · 站在谁肩上</text><rect x=\"38.0\" y=\"44.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">老马</text><rect x=\"38.0\" y=\"87.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"104.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">第一道门</text><rect x=\"38.0\" y=\"130.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#fdf3e3\" stroke=\"#ecd9b8\" stroke-width=\"1.2\"/><text x=\"48.0\" y=\"147.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#b45309\" font-weight=\"500\" text-anchor=\"start\">第二道门</text><text x=\"380.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">本文</text><rect x=\"282.0\" y=\"44.0\" width=\"196.0\" height=\"52.0\" rx=\"6\" fill=\"#e9eff5\" stroke=\"#d6e2ec\" stroke-width=\"1.2\"/><text x=\"292.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#163a5a\" font-weight=\"500\" text-anchor=\"start\">答案门、过程门、未来门、门的</text><text x=\"292.0\" y=\"78.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#163a5a\" font-weight=\"500\" text-anchor=\"start\">代价</text><text x=\"624.0\" y=\"32.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"10.5\" fill=\"#68727d\" font-weight=\"600\" text-anchor=\"middle\">下游 · 被谁接走</text><rect x=\"526.0\" y=\"44.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"61.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">答案验证</text><rect x=\"526.0\" y=\"87.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"104.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">过程图一致性</text><rect x=\"526.0\" y=\"130.0\" width=\"196.0\" height=\"35.0\" rx=\"6\" fill=\"#e8f5ec\" stroke=\"#cde9d5\" stroke-width=\"1.2\"/><text x=\"536.0\" y=\"147.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"12.0\" fill=\"#15803d\" font-weight=\"500\" text-anchor=\"start\">未来轨迹验证</text><line x1=\"238.0\" y1=\"108.5\" x2=\"271.0\" y2=\"108.5\" stroke=\"#d8d3c6\" stroke-width=\"1.4\"/><path d=\"M 270.0 104.0 L 270.0 113.0 L 278.0 108.5 Z\" fill=\"#d8d3c6\"/><line x1=\"482.0\" y1=\"108.5\" x2=\"515.0\" y2=\"108.5\" stroke=\"#d8d3c6\" stroke-width=\"1.4\"/><path d=\"M 514.0 104.0 L 514.0 113.0 L 522.0 108.5 Z\" fill=\"#d8d3c6\"/><text x=\"380.0\" y=\"197.0\" font-family=\"-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif\" font-size=\"11.0\" fill=\"#68727d\" font-weight=\"400\" text-anchor=\"middle\">故事 story-three-gates · 角色→剧情→概念（stories.json 字段）</text></svg><figcaption>图 1 · 故事地图：左列是三个核心角色（完整角色表见下方），中列是四幕剧情，右列是映射到的技术概念。</figcaption></figure><!--VIS:story-story-three-gates:end-->"
+ }
+]
